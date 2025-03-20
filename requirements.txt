@@ -36,7 +36,8 @@ PyYAML==6.0.2
 reportlab==4.2.5
 requests==2.32.3
 Send2Trash==1.8.2
-setuptools @ file:///opt/homebrew/Cellar/python%403.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/ensurepip/_bundled/setuptools-70.3.0-py3-none-any.whl#sha256=87668584509f56a5f756bac214afb8bfb5ea162093bbc1dd7425dac19788e5e4
+# setuptools @ file:///opt/homebrew/Cellar/python%403.11/3.11.9_1/Frameworks/Python.framework/Versions/3.11/lib/python3.11/ensurepip/_bundled/setuptools-70.3.0-py3-none-any.whl#sha256=87668584509f56a5f756bac214afb8bfb5ea162093bbc1dd7425dac19788e5e4
+setuptools==70.3.0
 six==1.17.0
 sqlparse==0.5.1
 stevedore==5.4.1
@@ -46,5 +47,6 @@ urllib3==2.3.0
 virtualenv==20.26.1
 virtualenv-clone==0.5.7
 virtualenvwrapper==6.1.0
-wheel @ file:///opt/homebrew/Cellar/python%403.11/3.11.9_1/libexec/wheel-0.43.0-py3-none-any.whl#sha256=b67082efda48f44ce2581ffb57e91393cfbccc1a220b29fcac7b34e9d9ad088d
+# wheel @ file:///opt/homebrew/Cellar/python%403.11/3.11.9_1/libexec/wheel-0.43.0-py3-none-any.whl#sha256=b67082efda48f44ce2581ffb57e91393cfbccc1a220b29fcac7b34e9d9ad088d
+wheel==0.43.0
 whitenoise==6.9.0

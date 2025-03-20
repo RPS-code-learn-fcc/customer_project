@@ -1,0 +1,21 @@
+{% if documents %}
+    {% for document in documents %}
+        <!-- Include each individual customer -->
+        {% include 'customers/document.html' with show_customer_name=True %}
+    {% endfor %}
+{% else %}
+    <p class="text-gray-500 text-center">No customers with documents found.</p>
+{% endif %}
+
+<!-- Infinite scroll logic -->
+{% if customers.has_next %}
+<div 
+    hx-get="{% url 'search-documents' %}?page={{ customers.next_page_number }}&search_document={{ search_document }}"
+    hx-trigger="revealed"
+    hx-target="this"
+    hx-swap="outerHTML"
+>
+    <p class="text-center text-gray-400">Loading more documents...</p>
+</div>
+{% endif %}
+

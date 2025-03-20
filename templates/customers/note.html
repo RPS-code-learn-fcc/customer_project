@@ -1,0 +1,38 @@
+{% load static %}
+      <!-- Associated Notes -->
+      <div>
+        <!-- Conditionally show customer name (when searching addresses), otherwise do not show it -->
+        {% if show_customer_name %}
+        <div class="space-y-2 bg-gray-100 p-4 rounded">
+            <a href="{% url 'view_customer_profile' customer.id %}"><h4 class="text-blue-500 hover:underline">{{ customer.display_name }}</h4></a>
+        </div>
+        {% endif %}
+        <h3 class="text-lg font-semibold text-gray-800 text-center">Notes:</h3>
+
+        {% if customer.notes.exists %}
+            <ul class="list-disc ml-4 space-y-3 mt-3">
+                {% for note in customer.notes.all %}
+                    <li class="flex items-center justify-center px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+                        <a href="{% url 'note_detail' customer.id note.id %}" class="text-blue-600 hover:underline font-medium">
+                            {{ note }}
+                        </a>
+                  
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-gray-500 mt-3 italic">No notes available.</p>
+        {% endif %}
+
+        <!-- Add/View Notes Actions -->
+        <div class="mt-4 text-center border-t border-gray-300 pt-4">
+            <a href="{% url 'customer-add-note' customer.id %}" 
+              class="inline-flex items-center px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                      hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+                Add Note
+            </a>
+            <a href="{% url 'view-all-notes' customer.id %}" class="text-blue-500 hover:underline ml-4">View All Notes</a>
+        </div>
+      </div>
+
+

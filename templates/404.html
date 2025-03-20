@@ -1,0 +1,13 @@
+<!-- Custom 404 page that only shows up in production, not development -->
+
+<!-- extends a predefined layout -->
+{% extends 'layouts/ContainerLayoutNoBackground.html' %}
+
+<!--Content block goes here-->
+{% block content %}
+<div class="text-center my-10">
+    <h1>Page not found</h1>
+    <p class="my-6">Error:404 - Page does not exist.</p>
+    <a class="button" href="{% url 'home' %}">Home</a>
+</div>
+{% endblock %}

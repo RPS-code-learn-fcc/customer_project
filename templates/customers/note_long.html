@@ -1,0 +1,47 @@
+<div class="max-w-3xl mx-auto px-4 py-6">
+    <h1 class="text-3xl font-bold mb-4 text-center">Note #{{ note.note_number }} for {{ customer.display_name }}</h1>
+  
+      <!-- Author and timestamp -->
+      <div class="flex items-center flex-col justify-between px-4 pt-4 pb-2 border-b border-gray-300">
+          <div class="flex items-center gap-2">
+            <img class="w-10 h-10 object-cover rounded-lg" src="{{ note.author.profile_image }}" alt="Profile Image">
+            <span class="text-sm text-gray-500">@{{ note.author.short_name }}</span>
+          </div>
+          <div class="text-sm text-gray-400 mt-1">{{ note.created_at }}</div>
+        </div>
+        
+        <!-- Note Content -->
+        <div class="mt-6 p-8 bg-gray-50 rounded-lg shadow-sm">
+          <p class="text-xl font-medium text-gray-800">{{ note.note }}</p>
+        </div>
+        
+        <!-- Edit Note Button -->
+        <div class="mt-6 text-center border-t border-gray-300 pt-4">
+          <a href="{% url 'note_edit' customer.id note.id %}" 
+             class="inline-flex items-center px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                    hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+            Edit Note
+          </a>
+        </div>
+    {% if not hide_buttons %}    
+    <!-- Navigation Links -->
+    <div class="mt-6 flex flex-col sm:flex-row justify-center gap-4">
+      <a href="{% url 'view_customer_profile' customer.id %}" 
+         class="inline-flex items-center px-4 py-2 bg-blue-700 text-white font-semibold rounded-md shadow 
+                hover:bg-blue-600 transition duration-300">
+        Back to profile
+      </a>
+      <a href="{% url 'view-all-notes' customer.id %}" 
+         class="inline-flex items-center px-4 py-2 bg-green-700 text-white font-semibold rounded-md shadow 
+                hover:bg-green-600 transition duration-300">
+        View all notes
+      </a>
+    </div>
+    {% endif %} 
+      <!-- Note History (Conditional) -->
+      {% if show_history %}
+      <div class="my-5">
+          {% include 'customers/note_edit_history.html' %}
+      </div>
+      {% endif %}
+  </div>

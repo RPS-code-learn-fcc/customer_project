@@ -1,0 +1,77 @@
+<!-- Phone & Contact Information Section -->
+<div class="space-y-2 bg-gray-100 p-4 rounded mb-4 w-full">
+        <!-- Conditionally show customer name if `show_customer_name` is True -->
+        {% if show_customer_name %}
+        <div class="bg-gray-100 p-4 rounde text-center">
+            <a href="{% url 'view_customer_profile' customer.id %}">
+                <h4 class="text-blue-500 hover:underline">{{ customer.display_name }}</h4>
+                {% if customer.is_inactive %}<span class="inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-md">INACTIVE</span>{% endif %}
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Display the count of phone numbers and properly pluralize if more than one -->
+        <h3 class="!mt-0 text-lg">{{ customer.phones.count }} Phone Number{{ customer.phones.count|pluralize }}:</h3>
+    
+        <!-- List of phone numbers, if they exist -->
+        {% if customer.phones.exists %}
+
+        <ul class="list-disc ml-4 space-y-3 mt-3">
+            {% for phone in customer.phones.all %}
+            <li class="flex items-center justify-between px-4 py-2 space-x-2 rounded-lg hover:bg-gray-200 transition">
+                <!-- Phone number with an edit link -->
+                <a href=" {% if not customer.is_inactive %}{% url 'phone-edit' customer.pk phone.pk  %}{%else%}{% url 'view_customer_profile' customer.id %} {%endif%}" class="text-blue-600 hover:underline font-medium">
+                    {{ phone }}
+                </a>
+                
+         
+                <!-- Contact permissions -->
+                <div class="flex space-x-2 text-xs text-gray-600">
+                    {% if phone.can_call %}
+                    <span class="font-bold">CALL</span>
+                    {% endif %}
+                    {% if phone.can_text %}
+                    <span class="font-bold">TEXT</span>
+                    {% endif %}
+                    {% if phone.can_leave_voicemail %}
+                    <span class="font-bold">VOICEMAIL</span>
+                    {% endif %}
+                    <!-- Primary boolean (only shows if it is primary contact method) -->
+                    {% if phone.is_primary %}
+                    <span class="text-xs text-blue-500 font-bold">
+                    PRIMARY
+                    </span>
+                    {% endif %}
+                </div>
+                <!-- Delete link -->
+                {% if not customer.is_inactive %}
+                <a href="{% url 'delete-customer-phone' customer.pk phone.pk  %}" 
+                class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 ml-2 rounded-lg hover:bg-red-200 transition">
+                Delete
+                </a>
+                {% else %}
+                <a href="{% url 'view_customer_profile' customer.id %}" 
+                    class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition">
+                    View Profile
+                </a>
+                {% endif %}
+                
+              
+            </li>
+            {% endfor %}
+        </ul>
+        
+        {% else %}
+        <!-- Message when no phone numbers are available -->
+        <p>No phone numbers available.</p>
+        {% endif %}
+
+        <!-- Option to add a new phone number -->
+        <div class="mt-4 text-center border-t border-gray-300">
+            <a href="{% url 'customer-add-phone' customer.id %}" 
+            class="inline-flex items-center mt-4 mr-4 px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+            Add Phone Number
+            </a>    
+        </div>
+    </div>

@@ -1,0 +1,74 @@
+<!--Extend layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page -->
+{% block title %}Add Address: {{customer}} {% endblock %}
+
+<!--Content to insert into the content block-->
+{% block content %}
+<div class="p-5">
+    <h1 class="text-center">Add Address: {{ customer }}</h1>
+    
+    <form method="post" class="space-y-4">
+        {% csrf_token %} 
+        
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+        <div class="errorlist">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <!-- Street Field -->
+        <div class="form-group">
+            <label for="{{ form.street.id_for_label }}">{{ form.street.label }}</label>
+            {{ form.street }}
+            <span class="text-red-500 text-sm">{{ form.street.errors }}</span>
+        </div>
+        
+        <!-- City Field -->
+        <div class="form-group">
+            <label for="{{ form.city.id_for_label }}">{{ form.city.label }}</label>
+            {{ form.city }}
+            <span class="text-red-500 text-sm">{{ form.city.errors }}</span>
+        </div>
+        
+        <!-- State Field -->
+        <div class="form-group">
+            <label for="{{ form.state.id_for_label }}">{{ form.state.label }}</label>
+            {{ form.state }}
+            <span class="text-red-500 text-sm">{{ form.state.errors }}</span>
+        </div>
+        
+        <!-- Zip Code Field -->
+        <div class="form-group">
+            <label for="{{ form.zip_code.id_for_label }}">{{ form.zip_code.label }}</label>
+            {{ form.zip_code }}
+            <span class="text-red-500 text-sm">{{ form.zip_code.errors }}</span>
+        </div>
+        
+        <!-- Mailing Address Checkbox -->
+        <div class="flex items-center space-x-2">
+            {{ form.mailing_address }}
+            <label for="{{ form.mailing_address.id_for_label }}">Mailing Address</label>
+        </div>
+        
+        <!-- Submit & Cancel Buttons -->
+        <div class="flex justify-center items-center space-x-4 mt-4">
+            <!-- Primary Action: Save Changes -->
+            <button type="submit" 
+                    class="h-10 px-4 py-2 !bg-blue-600 text-white rounded-lg hover:!bg-blue-700 transition duration-300">
+                Save Changes
+            </button>
+
+            <!-- Secondary Action: Cancel -->
+            <a href="{% url 'view_customer_profile' customer.id %}" 
+            class="h-10 flex items-center justify-center px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+                Cancel
+            </a>  
+        </div>
+
+    </form>
+</div>
+
+{% endblock %}

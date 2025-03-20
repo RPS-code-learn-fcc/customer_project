@@ -1,0 +1,86 @@
+<div id="signup-form-container" class="min-h-[70vh] flex flex-col justify-between">
+    <!-- 1. Sends a POST request to the 'create_customer_view_partial' URL using HTMX -->
+    <!-- 2. Specifies the target element (with ID 'signup-form-container') where the response should be inserted -->
+    <!-- 3. Replaces the inner HTML of the target element with the response from the server -->
+    <!-- 4. Allows file uploads (important if the form includes file inputs) -->
+    <!-- 5. Uses Tailwind CSS classes to style the form with a flexbox layout -->
+    <form method="post" 
+        hx-post="{% url 'create_customer_view_partial' %}" 
+        hx-target="#signup-form-container" 
+        hx-swap="innerHTML" 
+        enctype="multipart/form-data"
+        class="flex flex-col flex-grow"
+    >
+        <!-- Displays the number of total steps to the user -->
+        <h2 class="text-xl font-bold mb-4">Step {{ step }} of {{ total_steps }}</h2>
+        
+        <!-- For sercurity purposes -->
+        {% csrf_token %}
+
+        <!-- Display non-field errors -->
+        {% if form_errors %}
+        <div class="errorlist text-red-500 mb-4 p-3 bg-red-100 border border-red-400 rounded text-center">
+            {% for error in form_errors %}
+                <p class="text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Form Fields with a Bottom Border Below Last Field -->
+        <div class="flex flex-col gap-4 flex-grow">
+            {% for field in form %}
+                {% if field.field.widget.input_type == 'checkbox' %}
+                    <!-- Inline checkboxes -->
+                    <div class="flex items-center space-x-4">
+                        {{ field }}
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    </div>
+                {% else %}
+                    <!-- Regular fields -->
+                    <div class="flex flex-col pb-4 border-b border-gray-300 last:border-b-0">
+                        <label for="{{ field.id_for_label }}" class="font-semibold">{{ field.label }}</label>
+                        {{ field }}
+                        <span class="text-red-500 text-sm">{{ field.errors }}</span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Buttons: Next, Skip & Back Stay at the Bottom of the Page-->
+        <div class="flex justify-center space-x-3 items-center mt-auto border-t border-gray-300 pt-4 space-x-3">
+            <!-- Next Button -->
+            <button 
+                class="px-4 py-2 !bg-green-600 text-white rounded-lg hover:!bg-green-700 transition duration-300" 
+                type="submit">
+                Next
+            </button>
+            
+            <!-- Can only go back if there is a step to go back to-->
+            {% if step > 1 %}
+                <!-- Back Button to go back a step -->
+                <a href="{% url 'back_step' %}" 
+                   hx-get="{% url 'back_step' %}" 
+                   hx-target="#signup-container"
+                   class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300">
+                    Back
+                </a>
+        
+                <!-- Skip Button to skp a step -->
+                <a href="{% url 'skip_step' %}" 
+                   hx-get="{% url 'skip_step' %}" 
+                   hx-target="#signup-container"
+                   class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300">
+                    Skip
+                </a>
+            {% endif %}
+        
+            <!-- Cancel Button to cancel the entire sign up process -->
+            <a href="{% url 'cancel_signup' %}" 
+               hx-get="{% url 'cancel_signup' %}" 
+               hx-target="#signup-container"
+               class="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>

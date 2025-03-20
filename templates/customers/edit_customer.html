@@ -1,0 +1,56 @@
+<!-- Extend the base layout template -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page dynamically with the customer's name -->
+{% block title %}Edit Customer {{customer}} {% endblock %}
+
+{% block content %}
+<div class="p-5 w-full">
+    <!-- Page Heading -->
+    <h1 class="text-center"> Edit Customer: </h1>
+
+    <!-- Customer Edit Form -->
+    <form method="post">
+       <!-- For sercurity purposes -->
+       {% csrf_token %}
+
+       <!-- Display non-field errors -->
+       {% if form.non_field_errors %}
+        <div class="errorlist text-red-500 mb-4 p-3 bg-red-100 border border-red-400 rounded text-center">
+            {% for error in form.non_field_errors %}
+                <p class="text-sm">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+       <!-- Form Fields with a Bottom Border Below Last Field -->
+       <div class="flex flex-col gap-4 ">
+           {% for field in form %}
+               {% if field.field.widget.input_type == 'checkbox' %}
+                   <!-- Inline checkboxes -->
+
+                   <div class="flex items-center space-x-4 mt-2">
+                       <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                   </div>
+                   {{ field }}
+
+               {% else %}
+                   <!-- Regular fields -->
+                   <div class="flex flex-col pb-4 border-b border-gray-300 last:border-b-0">
+                       <label for="{{ field.id_for_label }}" class="font-semibold">{{ field.label }}</label>
+                       {{ field }}
+                       <span class="text-red-500 text-sm">{{ field.errors }}</span>
+                   </div>
+               {% endif %}
+           {% endfor %}
+       </div>
+        <div class="flex justify-center mt-4 ">
+            <button type="submit" class="px-4 rounded">
+                Save Changes
+            </button> <!-- Button to submit the form and save customer edits -->
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+

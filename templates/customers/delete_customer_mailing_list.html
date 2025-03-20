@@ -1,0 +1,45 @@
+{% extends 'layouts/ContainerLayoutNoBackground.html' %}
+
+{% block title %}Remove Customer From List{% endblock %} 
+
+{% block content %}
+<div class="flex flex-col items-center justify-start min-h-screen bg-gray-100 p-6 pt-12"> 
+
+    <div class="bg-white shadow-lg rounded-lg p-8 w-full max-w-lg">  
+        <!-- Header -->
+        <h1 class="text-3xl font-bold text-red-600 text-center">Delete: {{ customer }} from {{ mailing_list }}</h1>
+        <p class="text-gray-700 text-center mt-3 text-lg">
+            Are you sure you want to remove <span class="font-semibold"> {{customer}}</span> 
+            from the mailing list <span class="font-bold">{{ mailing_list }}</span>?
+        </p>
+
+        <!-- Form Buttons -->
+        <div class="flex flex-col items-center gap-4 mt-6">
+            <form method="POST" id="delete-form">
+                {% csrf_token %}
+                
+                <!-- Hidden Input to Store Redirect Destination -->
+                <input type="hidden" name="next_page" id="next_page" value="">
+
+                <!-- Confirm Delete Button (Opens Choices) -->
+                <!-- Confirm Delete Button (HTMX) -->
+                <div id="delete-container">
+                    <button type="button" id="confirm-delete"
+                        hx-post="{% url 'delete-customer-mailing-list' mailing_list.id customer.id %}"
+                        hx-trigger="click"
+                        hx-target="#delete-container"
+                        hx-swap="outerHTML"
+                        class="px-5 py-3 text-lg text-white rounded-lg hover:bg-red-700 transition duration-300">
+                        Confirm Delete
+                    </button>
+                    <a class="button secondaryAction ml-1 border-rounded" href="{% url 'list-mailing-lists' %}">Cancel</a>  
+
+                </div>
+            </form>
+
+       
+        </div>
+    </div>
+
+</div>
+{% endblock %}

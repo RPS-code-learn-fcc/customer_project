@@ -1,0 +1,26 @@
+<div>
+    <!-- Check if there are customers to display -->
+    {% if customers %}
+        <!-- Loop through each customer and include the template for displaying a customer -->
+        {% for customer in customers %}
+            {% include 'customers/customer.html' %}
+        {% endfor %}
+    {% else %}
+        <!-- Display a message if no customers are found -->
+        <p class="text-gray-500 text-center">No customers found.</p>
+    {% endif %}
+
+    <!-- Infinite scroll logic: Load more customers -if there are any more - when this div is revealed in the screen -->
+    <!-- Triggers the request when this div becomes visible -->
+    <!-- Replaces this div with the response from the server -->
+    <!-- Swaps the entire div with the new content (outerHTML) -->
+    <div 
+        hx-get="{% url 'home' %}?page={{ page|add:1 }}{% if search_customer %}&search_customer={{ search_customer }}{% endif %}" 
+        hx-trigger="revealed"  
+        hx-target="this"  
+        hx-swap="outerHTML"  
+    >
+        <!-- Placeholder text displayed while more customers are being loaded -->
+        <p class="text-center text-gray-400">Loading more customers...</p>
+    </div>
+</div>

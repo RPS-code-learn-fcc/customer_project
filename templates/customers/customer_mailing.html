@@ -1,0 +1,80 @@
+<!-- To Show when creating a mailing list-->
+<div class="bg-gray-100 p-4 rounded">
+    <!-- Customer Name & Link to View their profile-->
+    <div class="mb-2">
+        <a href="{% url 'view_customer_profile' customer.id %}" class="text-blue-500 hover:underline font-semibold">
+            {{ customer.display_name }}
+        </a>
+    </div>
+
+    <!-- Address List (if addresses exist) -->
+    {% if customer.addresses.all %}
+        <div class="customer-group" id="customer-{{ customer.id }}">
+            <!-- Create list of addresses to add to mailing lists-->
+            <ul class="space-y-2">
+                {% for address in customer.addresses.all %}
+                <!-- Only add addresses that are confirmed mailing addresses-->
+                    {% if address.mailing_address %}
+                    <li class="flex items-center justify-between space-x-4 border-b py-2 address-result">
+                        <!-- Customer and Address Info -->
+                        <div class="flex flex-col">
+                            <a href="{% url 'view_customer_profile' customer.id %}" class="text-blue-500 hover:underline font-semibold">
+                                {{ address.customer.display_name }}
+                            </a>
+                            <span class="text-gray-700">{{ address }}</span>
+                        </div>
+
+                        <!-- Add to List Button -->
+                        <!-- 
+                            It adds an address to a mailng list via htmx.
+                            - hx-post: sends request to add address el. via the backend
+                            - hx-target: updates 'selected-address'
+                            - hx-trigger: on button click
+                            - hx-vals: sends customer ID, name, address ID, and address details
+                            - hx-swap: inserts the new address into the list 
+                            - hx-on::after-request: after rquest is complete via JS
+                                - Updates a hidden input field (`hidden-addresses`) with selected address IDs.
+                                - removes button from list so the customer can only be added 1 time
+                        -->
+
+                        <a href="#"
+                            class="address-btn px-3 py-1 text-white bg-blue-500 rounded-lg hover:bg-blue-600 text-sm"
+                            hx-post="{% url 'add-selected-address' %}" 
+                            hx-target="#selected-addresses"
+                            hx-trigger="click"
+                            hx-vals='{
+                                "customer_id": "{{ customer.id }}", 
+                                "customer_name": "{{ customer.display_name }}", 
+                                "address_id": "{{ address.id }}", 
+                                "address": "{{ address }}"}'
+                            hx-swap="beforeend"
+                            
+                            hx-on::after-request="                                
+                                let hiddenField = document.getElementById('hidden-addresses');
+
+                                let addresses = hiddenField.value ? hiddenField.value.split(',') : [];
+
+                                addresses.push('{{ address.id }}');
+
+                                hiddenField.value = addresses.join(',');
+
+                                if (!addresses.includes('{{ address.id }}')) {
+                                    addresses.push('{{ address.id }}');
+                                    hiddenField.value = addresses.join(',');
+                                }
+                                this.remove();  // Remove from search results
+                                document.getElementById('customer-{{ customer.id }}').remove()
+                                "
+                        >
+                            + Add to List
+                        </a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+    <!-- Show that know addresses are available -->
+        <p class="text-gray-500">No address available.</p>
+    {% endif %}
+</div>

@@ -1,0 +1,6 @@
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!--Include the long note (more detailed version), pass certain variables: hide them and show the history-->
+{% block content %}
+    {% include 'customers/note_long.html' with note=note customer=customer hide_buttons=False show_history=True %}
+{% endblock %}

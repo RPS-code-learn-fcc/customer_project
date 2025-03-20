@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block layout %}
+<section class="block max-w-3xl mx-auto my-10 px-6 min-h-screen">
+    <div class="square p-8 !pb-10 space-y-4 space-x-4">
+        {% block content %}
+        {% endblock %}
+    </div>
+</section>
+{% endblock%}

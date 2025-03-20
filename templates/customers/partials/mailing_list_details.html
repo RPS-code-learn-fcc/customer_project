@@ -1,0 +1,28 @@
+<!-- Mailing List Container -->
+<div id="mailing-list-details">
+    <ul class="space-y-2">
+        {% for customer in mailing_list.customers.all %}
+            {% if not customer.addresses.exists %}
+                <li class="p-3 bg-gray-100 rounded-lg border border-gray-300 shadow-sm">
+                    <a href="{% url 'view_customer_profile' customer.id %}" 
+                        class="text-blue-500 hover:underline font-medium">
+                        {{ customer.display_name }}
+                    </a>
+                    <button 
+                        class="text-red-500 ml-2 bg-transparent hover:bg-transparent border border-transparent hover:border-gray-400 rounded-lg px-2 py-1 transition duration-200"
+                        hx-post="{% url 'delete-customer-mailing-list' mailing_list.id customer.id %}" 
+                        hx-trigger="click"
+                        hx-target="#mailing-list-details"
+                        hx-swap="outerHTML"
+                        hx-vals='{"customer_id": "{{ customer.id }}", "edit_mode": true}'
+                        hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                    >
+                        X Remove From List
+                    </button>
+                </li>
+            {% endif %}
+        {% empty %}
+            <p class="text-gray-500 italic">All customers have addresses assigned.</p>
+        {% endfor %}
+    </ul>
+</div>

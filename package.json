@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "minify": "npx cssnano /static/css/tailwind.css /static/css/tailwind.min.css"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.0.14",
+    "autoprefixer": "^10.4.20",
+    "daisyui": "^4.12.23",
+    "postcss": "^8.5.2",
+    "tailwindcss": "^4.0.14"
+  },
+  "devDependencies": {
+    "cssnano": "^7.0.6"
+  }
+}

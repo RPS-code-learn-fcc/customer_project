@@ -1,0 +1,23 @@
+{% if notes %}
+    {% for note in notes %}
+        <!-- Display each customer note inside a styled container -->
+        <div class="square">    
+            {% include 'customers/note_long.html' with note=note customer=note.customer hide_buttons=False show_history=False %}
+        </div>
+    {% endfor %}
+{% else %}
+    <!-- Message displayed when no notes are found -->
+    <p class="text-gray-500 text-center">No customers with notes found.</p>
+{% endif %}
+
+<!-- Infinite scroll logic for loading additional notes when the user scrolls -->
+{% if customers.has_next %}
+<div 
+    hx-get="{% url 'search-notes' %}?page={{ customers.next_page_number }}&search_document={{ search_note }}"
+    hx-trigger="revealed"
+    hx-target="this"
+    hx-swap="outerHTML"
+>
+    <p class="text-center text-gray-400">Loading more notes...</p>
+</div>
+{% endif %}

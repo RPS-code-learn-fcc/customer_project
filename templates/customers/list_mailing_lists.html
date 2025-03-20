@@ -1,0 +1,64 @@
+<!--Extends a predetermined layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!--Updates the page title-->
+{% block title %}Mailing Lists{% endblock %}
+
+<!--Inserts the content into the layout template-->
+{% block content %}
+<div class="p-5">
+    <!--Shows the title at the top of the page-->
+    <h1 class="text-center text-2xl font-bold mb-4">All Mailing Lists</h1>
+
+    {% if mailing_lists %}
+    <!--Creates a table that lists all the mailing lists-->
+    <table class="w-full border-collapse border border-gray-300">
+        <thead>
+            <!--Headers in the table-->
+            <tr class="bg-gray-200">
+                <th class="border border-gray-300 px-4 py-2 text-center">Name</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Total Customers</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Total Addresses</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Actions</th>
+                <th class="border border-gray-300 px-4 py-2 text-center">Delete List</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <!--Details displayed in the table-->
+            {% for mailing_list in mailing_lists %}
+            <tr class="hover:bg-gray-100">
+                <!--Mailing List Name-->
+                <td class="border border-gray-300 px-4 py-2 text-center">
+                    {{ mailing_list.name }}
+                    <br>
+                    <span class="text-sm text-gray-500 italic">{{ mailing_list.created_at }}</span>
+                </td>  
+                <!--Total number of customers-->              
+                <td class="border border-gray-300 px-4 py-2 text-center">{{ mailing_list.customers.count }}</td>
+                <!--Total number of addresses-->              
+                <td class="border border-gray-300 px-4 py-2 text-center">{{ mailing_list.addresses.count }}</td>
+                <!--Action link-->
+                <td class="border border-gray-300 px-4 py-2 text-center">
+                    <a href="{% url 'view-mailing-list-details' mailing_list.pk %}" class="text-blue-500 hover:underline">
+                        View Details
+                    </a>
+                </td>
+                <!--Delete a list from the mailing list-->
+                <td class="border border-gray-300 px-4 py-2 text-center">
+                    <a href="{% url 'delete-mailing-list' mailing_list.pk %}" class="text-blue-500 hover:underline">
+                        Delete
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <!-- if no mailing lists exist in the database-->
+        <p class="text-center text-gray-600">
+            No mailing lists at this time.
+        </p>
+    {% endif %}    
+
+{% endblock %}

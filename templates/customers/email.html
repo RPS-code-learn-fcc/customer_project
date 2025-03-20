@@ -1,0 +1,63 @@
+<!-- Email & Contact Information Section -->
+<div class="bg-gray-100 p-4 rounded mb-4">
+    <!-- Conditionally show customer name if `show_customer_name` is True -->
+    {% if show_customer_name %}
+    <div class="space-y-2 bg-gray-100 p-4 rounded text-center">
+        <!-- Customer name links to their full profile -->
+        <a href="{% url 'view_customer_profile' customer.id %}">
+            <h4 class="text-blue-500 hover:underline">{{ customer.display_name }}</h4>
+            {% if customer.is_inactive %}<span class="inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-md">INACTIVE</span>{% endif %}
+
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Display the count of emails and properly pluralize if more than one -->
+    <h3>{{ customer.emails.count }} Email{{ customer.emails.count|pluralize }}:</h3>
+    
+    {% if customer.emails.exists %}
+
+    <!-- List of email addresses -->
+    <ul class="list-disc ml-4 space-y-3 mt-3">
+        {% for email in customer.emails.all %}
+        <li class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+                <!-- Email address with an edit link -->
+                <a href="{% url 'email-edit' customer.id email.id %}" 
+                class="text-blue-600 hover:underline font-medium">
+                    {{ email }}{% if email.preferred_email %}
+                        <span class="text-xs text-blue-600 mt-1 font-bold">PREFERRED</span>
+                    {% endif %}
+                </a>
+                <!-- Delete link -->
+                {% if not customer.is_inactive %}
+                <a href="{% url 'delete-customer-email' customer.pk email.pk  %}" 
+                class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 ml-2 rounded-lg hover:bg-red-200 transition">
+                Delete
+                </a>
+                {% else %}
+                <a href="{% url 'view_customer_profile' customer.id %}" 
+                class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition">
+                View Profile
+            </a>
+            {% endif %}
+
+        </li>
+        {% endfor %}
+    </ul>
+
+    {% else %}
+    <!-- Message when no email addresses are available -->
+    <p>No email available.</p>
+    {% endif %}
+
+    <!-- Option to add a new email -->
+    <div class="mt-4 text-center border-t border-gray-300">
+        <a href="{% url 'customer-add-email' customer.id %}" 
+        class="inline-flex items-center mt-4 mr-4 px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+            Add Email
+        </a>
+
+        </div>
+</div>
+

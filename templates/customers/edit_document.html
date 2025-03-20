@@ -1,0 +1,58 @@
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+<!-- Extends the base layout 'ContainerLayoutWhite.html', ensuring a consistent structure for the page -->
+
+{% block title %}Edit {{ customer.display_name }}'s Document{% endblock %}
+<!-- Sets the page title dynamically based on the customer's display name -->
+
+{% block content %}  
+
+<div class="p-5">
+   <div class="pb-2">
+
+      <h1>Edit Document for {{ customer }}:</h1>
+      <!-- Page heading indicating the document being edited -->
+
+      <form method="POST" enctype="multipart/form-data">
+         <!-- Form for editing the document; uses POST method and allows file uploads -->
+
+         {% csrf_token %}
+         <!-- Includes a CSRF token for security to prevent cross-site request forgery attacks -->
+
+         {{ form.as_p }}
+         <!-- Renders the form fields as paragraphs -->
+
+         <!-- Non-field Errors -->
+         <div class="nonfield-errors">
+            {% if form.non_field_errors %}
+               <!-- Checks if there are any non-field errors (errors not tied to a specific field) -->
+               <div class="errorlist">
+                  {{ form.non_field_errors }}
+                  <!-- Displays non-field errors in a formatted list -->
+               </div>
+            {% endif %}
+         </div>
+
+         <!-- Save & Cancel Buttons -->
+         <div class="flex justify-center items-center space-x-4 mt-4">
+            <!-- Flex container to align buttons horizontally with spacing -->
+
+            <!-- Primary Action: Save Changes -->
+            <button type="submit" 
+                  class="h-10 px-4 py-2 !bg-blue-600 text-white rounded-lg hover:!bg-blue-700 transition duration-300">
+               Save Changes
+            </button>
+            <!-- Styled button to submit the form and save changes -->
+
+            <!-- Secondary Action: Cancel -->
+            <a href="{% url 'view_customer_profile' customer.id %}" 
+               class="h-10 flex items-center justify-center px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+               Cancel
+            </a>  
+            <!-- Button to navigate back to the customer's profile page without saving -->
+         </div>
+      </form>  
+   </div>  
+</div>  
+
+{% endblock %}
+<!-- Ends the content block defined in the base layout -->

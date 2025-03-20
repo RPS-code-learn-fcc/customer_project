@@ -1,0 +1,86 @@
+<!--Extend layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page -->
+{% block title %}Add Phone: {{ customer }} {% endblock %}
+
+<!--Content to insert into the content block-->
+{% block content %}
+<div class="p-5">
+    <h1 class="text-center">Add Phone: {{ customer }}</h1>
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- Non-field Errors -->
+        {% if form.non_field_errors %}
+            <div class="errorlist">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!--Field: Phone number-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="{{ form.phone_number.id_for_label }}">{{ form.phone_number.label }}</label>
+            {{ form.phone_number }}
+            {{ form.phone_number.errors }}
+        </div>
+        
+        <!--Field: Phone number extension-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="{{ form.extension.id_for_label }}">{{ form.extension.label }}</label>
+            {{ form.extension }}
+            {{ form.extension.errors }}
+        </div>
+        
+        <!--Field: Phone Type-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="{{ form.phone_type.id_for_label }}">{{ form.phone_type.label }}</label>
+            {{ form.phone_type }}
+            {{ form.phone_type.errors }}
+        </div>
+
+        <!--Field: Is Primary-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            {{ form.is_primary }}
+            <label for="{{ form.is_primary.id_for_label }}">{{ form.is_primary.label }}</label>
+            {{ form.is_primary.errors }}
+        </div>
+        
+        <!--Field: Can Call-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            {{ form.can_call }}
+            <label for="{{ form.can_call.id_for_label }}">{{ form.can_call.label }}</label>
+            {{ form.can_call.errors }}
+        </div>
+        
+        <!--Field: Can Text-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            {{ form.can_text }}
+            <label for="{{ form.can_text.id_for_label }}">{{ form.can_text.label }}</label>
+            {{ form.can_text.errors }}
+        </div>
+        
+        <!--Field: Can Leave Voicemail-->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            {{ form.can_leave_voicemail }}
+            <label for="{{ form.can_leave_voicemail.id_for_label }}">{{ form.can_leave_voicemail.label }}</label>
+            {{ form.can_leave_voicemail.errors }}
+        </div>
+        
+        <!-- Submit & Cancel Buttons -->
+        <div class="flex justify-center items-center space-x-4 mt-4">
+            <!-- Primary Action: Save Changes -->
+            <button type="submit" 
+                    class="h-10 px-4 py-2 !bg-blue-600 text-white rounded-lg hover:!bg-blue-700 transition duration-300">
+                Save Changes
+            </button>
+
+            <!-- Secondary Action: Cancel -->
+            <a href="{% url 'view_customer_profile' customer.id %}" 
+            class="h-10 flex items-center justify-center px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+                Cancel
+            </a>  
+        </div>
+    </form>
+</div>
+{% endblock %}

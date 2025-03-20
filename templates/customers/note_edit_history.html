@@ -1,0 +1,22 @@
+<details class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <summary class="cursor-pointer text-xl font-semibold text-gray-800">
+      Edit History
+    </summary>
+    <div class="mt-4">
+      {% for entry in history %}
+        <div class="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+          <p class="mb-1">
+            <span class="font-bold">Edited By:</span> {{ entry.edited_by }}
+          </p>
+          <p class="mb-1">
+            <span class="font-bold">Edited At:</span> {{ entry.edited_at }}
+          </p>
+          <p>
+            <span class="font-bold">Previous Note:</span> {{ entry.previous_note }}
+          </p>
+        </div>
+      {% empty %}
+        <div class="text-gray-600">No edits yet.</div>
+      {% endfor %}
+    </div>
+</details>

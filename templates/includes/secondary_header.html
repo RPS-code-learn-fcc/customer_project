@@ -1,0 +1,29 @@
+<!-- Secondary Navigation Bar: included in base.html, shown only to authenticated users -->
+<nav class="sec-nav mx-auto w-[90%] max-w-6xl bg-gray-300 rounded-lg shadow-md p-4 sm:p-6 mt-6 sm:mt-8 mb-4">
+    
+    <!-- Nav Links for other pages & style using tailwind child element styling to create a responsive header -->
+    <ul class="flex flex-wrap items-center justify-center gap-x-6 gap-y-4 text-center px-4 py-3 rounded-md text-lg 
+        [&>li>a]:block [&>li>a]:px-4 [&>li>a]:py-2 [&>li>a]:rounded-lg bg-gray-100 font-semibold transition 
+        [&>li>a]:duration-300 [&>li>a:hover]:text-gray-600">
+        <!--- Links are pretty self explanatory -->
+        <li>
+            <a href="{% url 'create_customer_view' %}">Create Customer</a>
+        </li>
+        <li>
+            <a href="{% url 'create-customer-mailing-list' %}">Create Mailing List</a>  
+        </li>
+        <li>
+            <a href="{% url 'list-mailing-lists' %}">View Current Mailing Lists</a>
+        </li>
+        <!-- <li>
+            <a href="{% if request.user.short_name %}{% url 'userprofile-email' request.user.short_name %}{% else %}#{% endif %}">
+                My Profile
+            </a>
+        </li> -->
+        <li>
+            <a href="{% if request.user.short_name %}{% url 'userprofile-edit' request.user.short_name %}{% else %}#{% endif %}">
+                Edit My Profile
+            </a>
+        </li>
+    </ul>
+</nav>

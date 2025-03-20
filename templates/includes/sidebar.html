@@ -1,0 +1,135 @@
+{% load static %}
+<!-- Styling of the sidebar-->
+<!-- This element is part of an Alpine.js-powered sidebar, appearing when mobileSidebarOpen is true. 
+    It includes conditional rendering and responsive layout adjustments depending on screen size and transistion styling for when it appears on the page-->
+<aside x-show="mobileSidebarOpen" x-cloak 
+    class="lg:!block col-span-full md:col-span-1 lg:mr-[30%] lg:ml-[10%] order-1 md:order-2"
+    x-transition:enter="duration-500 ease-in-out" 
+    x-transition:enter-start="opacity-0 -translate-y-32"
+    x-transition:enter-end="opacity-100 translate-y-0">
+    
+    <!-- Filter by Date Added section: only filters the 'search by customer' on the home page -->  
+    <!-- HTMX: A JS library that extends HTML to enable declarative, client-side interactions with server-side resources, 
+        allowing for dynamic page behaviors and an enhanced UI without the need for lots of JS code -->  
+    <!-- 
+        HTMX input field: This input field uses HTMX to trigger a GET request to the 'filter-customers-by-dates' URL when the value changes.
+        The response from the server will be rendered in the element with the id 'customer-results' div in home.html.
+        The 'hx-include' attribute includes the value of the 'end_date' field in the request.
+    -->
+    <section class="square p-4">
+        <h2>Filter By Date Added:</h2>
+        <label class="block text-sm font-bold mb-2" for="start_date">Start Date:</label>  
+        <!-- Start Date Filter: uses htmx & a date picker -->
+        <input 
+            type="date" 
+            class="w-full p-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-500" 
+            id="start_date" 
+            hx-get="{% url 'filter-customers-by-dates' %}" 
+            hx-target="#customer-results" 
+            hx-trigger="change"
+            hx-include="[name='end_date']"
+            name="start_date"
+        >  
+        <label class="block text-sm font-bold mb-2" for="end_date">End Date:</label>  
+        <!-- End Date Filter: uses htmx & a date picker -->
+        <!-- HTMX fucntions the same way as the start_date input -->
+        <input 
+            type="date" 
+            class="w-full p-2 pl-10 text-sm text-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-600" 
+            id="end_date" 
+            hx-get="{% url 'filter-customers-by-dates' %}" 
+            hx-target="#customer-results" 
+            hx-trigger="change"
+            hx-include="[name='start_date']"
+            name="end_date"
+        >  
+
+    </section>
+    <!-- The Users Section: allows for the filtering of customers on the home page by the user that created the customer -->
+    <section class="square p-4">
+        <h2>Filter By User:</h2>
+        <ul class="home-checkbox-container text-center space-y-2 mb-5">
+            <!--Lists users, if they exist-->
+            {% if users.exists %}
+                {% for user in users %}
+                <!-- lists each user in the database -->
+                    <li>
+                        <label class="flex items-center space-x-2">
+                            <!-- HTMX allows for dynamic filtering of customers by user: styled using css classinterest-checkbox in base.html-->
+                            <!--The htmx is triggered when the checkbox is checked or not & the resuling AJAX GET request is sent to 'filter-customers-by-users'-->
+                            <!--The response updates the 'customer-results' div in home.html -->
+                            <input 
+                                type="checkbox" 
+                                class="interest-checkbox" 
+                                value="{{ user.id}}" 
+                                hx-get="{% url 'filter-customers-by-users' %}" 
+                                hx-target="#customer-results" 
+                                hx-trigger="change"
+                                hx-include="[name='selected_users']"
+                                name="selected_users"
+                                {% if user.id|stringformat:'s' in selected_user_ids %}checked{% endif %}
+                            >
+                            <!-- Diplays the user's profile image and name -->
+                            <img class="w-8 h-8 object-cover rounded-lg" src="{{ user.profile_image }}">  
+                            <span class="text-sm">@{{ user.short_name }}</span>  
+                        </label>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <!--To display if there are no users in the database-->
+                <li>No users are available.</li>
+            {% endif %}
+        </ul>
+    </section>
+    
+    <!-- The Interests Section -->
+    <section class="square p-4">
+        <h2>Filter By Interests:</h2>
+        <ul class="home-checkbox-container text-center space-y-2 mb-5">
+            <!-- Lists interests, if they exist-->
+            {% if interests.exists %}
+                {% for interest in interests %}
+                <li>
+                    <!-- HTMX allows for dynamic filtering of customers by customer interest: styled using css classinterest-checkbox in base.html-->
+                    <!--The htmx is triggered when the checkbox is checked or not & the resuling AJAX GET request is sent to 'filter-customers-by-interests'-->
+                    <!--The response updates the 'customer-results' div in home.html -->
+                    <label class="flex items-center space-x-2">
+                        <input 
+                            type="checkbox" 
+                            class="user-checkbox" 
+                            value="{{ interest.slug }}" 
+                            hx-get="{% url 'filter-customers-by-interests' %}" 
+                            hx-target="#customer-results" 
+                            hx-trigger="change"
+                            hx-include="[name='selected_interests']"
+                            name="selected_interests"
+                            {% if interest.slug in selected_interest_slugs %}checked{% endif %}
+                        >
+                        <!-- Shows the interest icon image and interst name-->
+                        <img src="{{ interest.icon_image_url }}" style="margin-right: 10px;">
+                        <span class="font-bold text-sm">{{ interest.name }}</span>
+                    </label>
+                </li>
+                {% endfor %}
+            {% else %}
+            <!-- Displayed if there are no interests-->
+                <li>Currently, no interests.</li>
+            {% endif %}
+        </ul>
+
+        <!-- A new interest can also be added -->
+        <div class="flex justify-between space-x-4 text-lg">   
+            <button class="rounded-lg">  
+                <a href="{% url 'add-interest' %}">Add Interest</a>  
+            </button>  
+        </div>
+        <!-- A new interest can also be added -->
+        <div class="flex justify-between space-x-4 text-center">   
+            <a href="{% url 'add_contact_method' %}" class="text-sm bg-gray-400 hover:bg-gray-500 text-white py-1 px-3 rounded-md transition duration-300 ease-in-out">
+                Add Contact Method
+            </a>        
+        </div>
+    </section>
+
+</aside>
+

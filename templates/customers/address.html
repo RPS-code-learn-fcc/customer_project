@@ -1,0 +1,126 @@
+{% if not mailing_flag %}
+<!-- To Show when searching all addresses OR displaying addresses for the full customer profile -->
+<div>
+
+
+    <!-- Address & Contact Information -->
+    <div class="space-y-2 bg-gray-100 p-4 rounded mb-4 w-full">
+        <!-- Conditionally show customer name (when searching addresses), otherwise do not show it -->
+        {% if show_customer_name %}
+        <div class="space-y-2 bg-gray-100 p-4 rounded text-center">
+            <a href="{% url 'view_customer_profile' customer.id %}"><h4 class="text-blue-500 hover:underline">{{ customer.display_name }}</h4></a>
+            {% if customer.is_inactive %}<span class="inline-block px-2 py-1 text-xs font-semibold text-red-800 bg-red-200 rounded-md">INACTIVE</span>{% endif %}
+        </div>
+        {% endif %}
+            <h3>{{ customer.addresses.count }} Address{{ customer.addresses.count|pluralize:"es" }}:</h3>
+            {% if customer.addresses.exists %}
+            <ul class="list-disc ml-4 space-y-3 mt-3">
+                {% for address in customer.addresses.all %}
+                    <li class="flex items-center justify-between px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+                        <a href=" {% if not customer.is_inactive %}{% url 'address-edit' customer.pk address.pk  %}{%else%}{% url 'view_customer_profile' customer.id %} {%endif%}" class="text-blue-600 hover:underline font-medium">
+                            {{ address }}
+                        </a>
+                        {% if not customer.is_inactive %}
+                        <a href="{% url 'delete-customer-address' customer.pk address.pk  %}" 
+                            class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition">
+                            Delete
+                        </a>
+                        {% else %}
+                        <a href="{% url 'view_customer_profile' customer.id %}" 
+                            class="text-center text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition">
+                            View Profile
+                        </a>
+                        {% endif %}
+
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}  
+        <!--To display if no addresses are available -->
+            <p class="text-gray-500 mt-3 italic">Customer has no addresses.</p>
+        {% endif %}
+
+        <!-- Add Address button-->
+        <div class="mt-4 text-center border-t border-gray-300">
+            <a href="{% url 'customer-add-address' customer.id %}" 
+            class="inline-flex items-center mt-4 mr-4 px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                   hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+             Add Address
+            </a>    
+        </div>
+    </div>
+</div>
+{% else %}
+<!-- Template: Show when creating a mailing list -->
+<div class="bg-gray-100 p-4 rounded">
+    
+    <!-- Display Customer Name -->
+    {% if show_customer_name %}
+        <div class="mb-2">
+            <a href="{% url 'view_customer_profile' customer.id %}" class="text-blue-500 hover:underline font-semibold">
+                {{ customer.display_name }}
+            </a>
+        </div>
+    {% endif %}
+
+    <!-- Address List -->
+    {% if customer.addresses.all %}
+        <div class="customer-group" id="customer-{{ customer.id }}">
+            <ul class="space-y-2">
+                {% for address in customer.addresses.all %}
+                    {% if address.mailing_address %}
+                        <li class="flex items-center justify-between space-x-4 border-b py-2 address-result">
+                            
+                            <!-- Customer and Address Info -->
+                            <div class="flex flex-col">
+                                <a href="{% url 'view_customer_profile' customer.id %}" class="text-blue-500 hover:underline font-semibold">
+                                    {{ address.customer.display_name }}
+                                </a>
+                                <span class="text-gray-700">{{ address }}</span>
+                            </div>
+
+                            <!-- Add to Mailing List Button -->
+                            <a href="#"
+                            class="address-btn px-3 py-1 text-white bg-blue-500 rounded-lg 
+                                hover:bg-blue-600 hover:border-gray-400 text-sm border border-transparent 
+                                transition-all duration-300 ease-in-out"                               
+                            hx-post="{% url 'add-selected-address' %}" 
+                               hx-target="#selected-addresses"
+                               hx-trigger="click"
+                               hx-vals='{"customer_id": "{{ customer.id }}", "customer_name": "{{ customer.display_name }}", "address_id": "{{ address.id }}", "address": "{{ address }}"}'
+                               hx-swap="beforeend"
+                               hx-on::after-request="
+                                   let hiddenField = document.getElementById('hidden-addresses');
+                                   let addresses = hiddenField.value ? hiddenField.value.split(',') : [];
+
+                                   // If the address isn't already in the list, add it
+                                   if (!addresses.includes('{{ address.id }}')) {
+                                       addresses.push('{{ address.id }}');
+                                       hiddenField.value = addresses.join(',');
+                                   }
+
+                                   // Remove the selected address from search results
+                                   this.remove();
+                                   document.getElementById('customer-{{ customer.id }}')?.remove();
+
+                                   // Move the newly added address to the top of the selected list
+                                   let selectedList = document.getElementById('selected-addresses');
+                                   let newAddressElement = selectedList?.lastElementChild;
+                                   if (newAddressElement && selectedList.firstChild) {
+                                       selectedList.insertBefore(newAddressElement, selectedList.firstChild);
+                                   }
+                               ">
+                                + Add to List
+                            </a>
+
+                        </li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <!-- Message when no addresses are available -->
+        <p class="text-gray-500">No address available.</p>
+    {% endif %}
+</div>
+{% endif %}

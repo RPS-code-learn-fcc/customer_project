@@ -1,0 +1,71 @@
+<!-- Extends a custom layout -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Title Block -->
+{% block title %} Edit {{profile.short_name}}'s profile {% endblock %}
+
+<!-- Adds block content -->
+{% block content %}
+<div class="text-center flex flex-col items-center border-8 border-gray-300 bg-gray-50 rounded-lg p-6 ">
+    <h1 class="text-center m-2">Edit My Profile</h1>
+    <div>
+        <img id="userprofile_image" class="w-40 h-40 rounded-lg object-cover m-4 border-8 border-gray-300 shadow" src="{{ profile.profile_image }}" />
+        <div class="text-center max-w-md">
+            <div class="text-gray-500 mb-2 -mt-3">@{{ profile.short_name }}</div>
+        </div>
+    </div>
+    
+    <!-- Form to edit CustomUser information-->
+    <form method="POST" enctype="multipart/form-data">
+        <div> 
+            <h2>Name: {{ profile.user_name }}  </h2>     
+        </div>
+        {% csrf_token %}
+        {{ form.as_p }}
+        
+        <!-- Button to Update Profile -->
+        <button type="submit" class="rounded-lg mt-3 ">Update Profile</button>
+        
+        <!-- Cancel Button (smaller and below): Saves nothing and returnes to the user profile view page -->
+        <div class="mt-2">
+            <a 
+                class="button secondaryAction text-sm rounded-lg"
+                href="{% url 'userprofile-email' profile.short_name %}">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block script %}
+<!-- Script to dynmically update uploaded profile image. -->
+<script>
+    // Select both the file input and profile image elements
+    const fileInput = document.querySelector('input[type="file"]'); // selects 1st html element that matches the css selector input / 1st file on the page
+    const profileImage = document.querySelector('#userprofile_image'); // selectes element with this id
+
+    // func - updates the profile image on the page
+    function updateProfileImage(event) {
+        // Get the first selected file uploaded
+        const file = event.target.files[0];
+
+        // Check if that the file both exists and is an image (MIME type stares with image)
+        if (file && file.type.startsWith('image/')) {
+            // Generate a temporary URL for the selected image file so it can be accessed even though it has not been uploaded to the server
+            const imageUrl = URL.createObjectURL(file);
+
+            // Update the 'src' attribute on the page to show the new image
+            profileImage.src = imageUrl;
+        } else {
+            alert("Please select a valid image file."); // alerts the user if they do not select a valid file type
+        }
+    }
+
+    // Attach the created function to a 'change' event listener to update the profile picture
+    fileInput.addEventListener('change', updateProfileImage);
+
+    
+</script>
+{% endblock %}
+

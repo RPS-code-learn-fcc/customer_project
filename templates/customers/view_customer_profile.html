@@ -1,0 +1,213 @@
+
+<!-- Extends a predetermined layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Title Name -->
+{% block title %}Profile:{{customer}}{% endblock %}
+
+<!-- Load in Static for user profile images-->  
+{% load static %}  
+
+<!-- Content Block -->
+{% block content %}
+
+<!-- Displays all of customer information -->  
+<article class="w-full">  
+    
+  <!-- Header Section: User profile / image  & timestamp: Who created the profile, etc. -->  
+  <div class="flex items-center justify-between align-center p-5 h-14 bg-gray-100">  
+    <h3 class="text-start leading-5 mr-1 pt-6">  
+      <a class="flex items-center gap-1 mb-4" href="{% url 'userprofile-email' customer.creator.short_name %}">  
+        <img class="w-10 h-10 object-cover rounded-lg" src="{{ customer.creator.profile_image }}">  
+        <span class="text-lg text-gray-700 hover:underline">@{{ customer.creator.short_name }}</span>  
+      </a>  
+    </h3>  
+    <div class="text-lg text-gray-700 truncate">{{ customer.created_at }}</div>  
+  </div>  
+
+  <!-- Customer Details Section -->  
+  <section class="p-4 bg-gray-200">  
+    <div class="p-2 bg-gray-200 text-center">
+      {% if customer.is_inactive %}
+      <div class="p-4 text-red-800 bg-red-200 border border-red-400 rounded-lg">
+          <strong>Notice:</strong> This customer is inactive. Toggle the customer active to update profile.
+      </div>
+      {% endif %}
+    </div>
+      
+    <!-- Styling of the details section depends on if the customer is inactive or active, inactive customers are covered in opaque faded styling and buttons are not clickable -->
+    <div id="customer-details"  class="space-y-4 {% if customer.is_inactive %}opacity-50 pointer-events-none{% else %}opacity-100{% endif %}" >  
+    
+      <!-- Customer Overview: Name & Option to Edit Customer info -->
+      <div class="p-3 rounded text-center w-full mt-3 mb-1 space-y-4 bg-gray-100 border-4 border-white p-4 rounded shadow-sm">
+
+          <!-- Displays Customer Name -->
+          <h2 class="w-4/5 mx-auto py-3 rounded-md text-center ">{{ customer.display_name }}</h2>
+          
+          <!-- Interests Section: Displays the customer interests, if they exist -->  
+          <div class="flex flex-wrap justify-center gap-2 my-4 bg-gray-100 p-4 rounded-sm">  
+            {% if customer.interests.exists %}
+              {% for interest in customer.interests.all %}  
+              <div class="bg-gray-300 rounded-lg px-3 py-1 flex items-center">
+                <img src="{{ interest.icon_image_url }}" class="mr-2">
+                    <span class="font-bold text-sm">{{ interest.name }}</span>
+              </div>
+              {% endfor %}  
+            {% else %}
+                <h5>Currently, no interests. Edit Customer to Add Interests.</h5>
+            {% endif %}
+          </div>  
+          
+          <!-- Displays preferred customer contact methods -->
+          <p id="customer-contact-methods" class="text-gray-700 mt-3"><strong>Contact via:</strong> {{ customer.preferred_contact_methods_display }}</p>
+          
+          <!-- Styles Edit Customer Button -->
+          <div class="mt-4 text-center border-t border-gray-300">
+            <a href="{% url 'edit-customer' customer.id %}" 
+                class="inline-flex items-center mt-4 mb-4 px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+                      hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+            Edit Customer
+            </a>
+          </div>
+      </div>
+    
+      <!-- Includes Other Templates for contact infromation: Phones, Emails & Addresses -->
+      <div class="space-y-4 bg-gray-100  border-4 border-white p-4 rounded my-1 shadow-sm"> 
+
+        <!-- Template inheritance: Do not show the customer name again, as it is displayed at the top -->  
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          {% include 'customers/address.html' with show_customer_name=False %}
+        </div>  
+    
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          {% include 'customers/phone.html' with show_customer_name=False %}
+        </div>
+  
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          {% include 'customers/email.html' with show_customer_name=False %}
+        </div>
+      </div>
+
+      <!--Associated Notes -->
+      <div class="bg-gray-100 shadow-sm p-6 rounded border-4 border-white my-3">
+        {% include 'customers/note.html' with show_customer_name=False %}
+      </div>
+
+      <!--Assoicated Documents-->
+      {% include 'customers/document.html' with show_customer_name=False %}
+
+      <!-- Mailing Lists: Lists mailing lists that customers are part of -->
+      <div class="bg-gray-100 shadow-sm p-6 rounded border-4 border-white my-3">
+        <h4 class="text-lg font-semibold text-gray-800 text-center">Mailing Lists:</h4>
+        {% if customer.mailing_lists.exists %}
+            <ul class="list-disc ml-4 space-y-3 mt-3">
+                {% for mailing_list in customer.mailing_lists.all %}
+                    <li class="flex items-center justify-between  px-4 py-2 rounded-lg hover:bg-gray-200 transition">
+                        <a href="{% url 'view-mailing-list-details' mailing_list.pk %}" class="text-blue-600 hover:underline font-medium">
+                            {{ mailing_list }}
+                        </a>
+                        <a href="{% url 'delete-customer-mailing-list' mailing_list.pk customer.pk %}" 
+                          class="text-red-500 hover:text-red-700 font-semibold text-sm px-3 py-1 bg-red-100 rounded-lg hover:bg-red-200 transition">
+                            Remove From List
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}  
+            <p class="text-gray-500 mt-3 italic">Customer is not part of any mailing lists.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Home & Inactive Buttons Button (Centered) -->
+    <div class="w-full p-4 flex justify-center items-center space-x-4">
+
+      <!-- Toggle Inactive Button -->
+      <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+      <button
+          id="mark-inactive-btn"
+          class="py-2 px-4 text-white rounded-lg transition duration-300 ease-in-out bg-red-600 hover:bg-red-700"
+          data-url="{% url 'toggle_inactive_status' customer.id %}"
+      >
+          {% if customer.is_inactive %}
+              Mark Active
+          {% else %}
+              Mark Inactive
+          {% endif %}
+      </button>
+
+      <!-- Home Button -->
+      <a href="{% url 'home' %}" 
+        class="inline-flex items-center justify-center py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-300 ease-in-out no-underline">
+        Home
+      </a>
+    </div>
+  
+  </section>
+
+</article>
+{% endblock %}
+
+{% block script %}
+<script>
+  // Script to toggle the styling of the page
+  document.addEventListener("DOMContentLoaded", function () {
+
+    // get buttons of interest
+    const button = document.getElementById("mark-inactive-btn");
+    const CustomerDetails = document.getElementById("customer-details");
+
+    // if the required buttons are not present, exit function
+    if (!button || !CustomerDetails) {
+        return;
+    }
+    // add an on click event listener to the mark inactive button
+      button.addEventListener("click", function () {
+  
+          fetch(button.dataset.url, {
+              method: "POST",
+              headers: {
+                  "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+              },
+          })
+          .then(response => response.json())
+          .then(data => {
+  
+              // Update button text
+              button.textContent = data.button_text;
+              console.debug("Updated button text:", data.button_text);
+  
+              // Toggle styling for customer-details
+              if (data.is_inactive) {
+                  CustomerDetails.classList.add("opacity-50", "pointer-events-none");
+                  CustomerDetails.classList.remove("opacity-100");
+                  disableElementsInside(CustomerDetails);
+              } else {
+                  CustomerDetails.classList.remove("opacity-50", "pointer-events-none");
+                  CustomerDetails.classList.add("opacity-100");
+                  enableElementsInside(CustomerDetails);
+              }
+          })
+          .catch(() => {});
+      });
+  
+      // Function to disable all form inputs, buttons, and links inside the div
+      function disableElementsInside(container) {
+          container.querySelectorAll("input, textarea, select, button, a").forEach(element => {
+              element.setAttribute("disabled", "true"); // Disable form elements & buttons
+              element.classList.add("cursor-not-allowed", "opacity-60"); // Style adjustments
+          });
+      }
+  
+      // Function to enable all form inputs, buttons, and links inside the div
+      function enableElementsInside(container) {
+          container.querySelectorAll("input, textarea, select, button, a").forEach(element => {
+              element.removeAttribute("disabled"); // Re-enable form elements & buttons
+              element.classList.remove("cursor-not-allowed", "opacity-60"); // Remove styles
+          });
+      }
+  });
+</script>
+  
+{% endblock %}

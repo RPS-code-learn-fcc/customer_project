@@ -1,0 +1,46 @@
+{% load static %}
+{% load static %}
+<!-- 
+    Global Header Component (included in base.html)
+    - This header is used across all pages.
+    - It has a shadow effect to make it stand out.
+    - It consists of two sections: the left (logo & company name) and the right (user authentication links).
+-->
+
+<header class="flex justify-between items-center bg-gray-100 p-4 shadow-md z-50">
+
+    <!-- Left Section: Logo & Company Name -->
+    <div class="flex items-center space-x-4">
+        <a href="{% url 'home' %}" 
+           class="flex items-center space-x-2 text-gray-900 text-lg font-semibold hover:text-gray-600 duration-300">
+            <!-- Logo -->
+            <img src="{% static 'images/agriculture.svg' %}" class="w-8 h-8" alt="Company Logo" />
+            <!-- Company Name -->
+            <span>My Company</span>
+        </a>
+    </div>
+
+    <!-- Right Section: User Authentication Links -->
+    <div class="flex items-center space-x-4">
+        {% if user.is_authenticated %}
+            <!-- Profile Link (Only if user has a short name (which they should), otherwise link is inactive) -->
+    
+            <!-- Home Icon -->
+            <a href="{% url 'home' %}">
+                <img class="w-6 h-6" src="{% static 'images/home.svg' %}" alt="Home">
+            </a>
+
+            <!-- Login & Logout is handled by django-allauth-->
+            <!-- Logout Button -->
+            <a href="{% url 'account_logout' %}" class="text-gray-900 hover:text-gray-600 duration-300">
+                Log Out
+            </a>
+        {% else %}
+            <!-- Login Button (for unauthenticated users) -->
+            <a href="{% url 'account_login' %}" class="text-gray-900 hover:text-gray-600">
+                Log In
+            </a>
+        {% endif %}
+    </div>
+
+</header>

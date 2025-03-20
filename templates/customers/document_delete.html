@@ -1,0 +1,49 @@
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+{% block title %}Delete {{ customer.display_name }}'s Document {% endblock %} 
+
+{% block content %}
+<div class="md:flex items-center">
+    {%  if request.user != document.author %}
+    <div class="w-full text-4xl mr-2">
+        {% if document.file %}
+            <a href="{{ document.file.url }}" class="text-lg font-semibold hover:underline hover:text-gray-700 break-words" target="_blank">{{ document }}</a>
+        {% endif %}
+    </div>
+    <div class="ml-3">
+        <h1 class="!text-red-700">Forbidden: You do not have Permission to Delete This Document</h1>
+        <p class="mb-6">Contact @{{ document.author.short_name }} to delete</p>
+        <a class="button ml-1" href="{% url 'view_customer_profile' customer.id %}"> Return to Profile</a>
+
+    </div>
+    {% else %}
+    <div class="w-full text-4xl">
+        {% if document.file %}
+            <a href="{{ document.file.url }}" class="text-lg font-semibold hover:underline hover:text-gray-700 break-words" target="_blank">{{ document }}</a>
+        {% endif %}
+    </div>
+    <div>
+        <h1 class="!text-red-700">Delete Document</h1>
+        <p class="mb-6">Are you sure you want to permanently delete this document?</p>
+        
+        <form method='POST'>
+            {% csrf_token %}
+            <!-- Delete & Cancel Buttons -->
+            <div class="flex justify-center items-center space-x-4 mt-4">
+                <!-- Primary Action: Delete -->
+                <button type="submit" 
+                    class="h-10 px-4 py-2 !bg-red-500 text-white rounded-lg hover:!bg-red-600 transition duration-300">
+                Delete
+                </button>
+
+                <!-- Secondary Action: Cancel -->
+                <a href="{% url 'view_customer_profile' customer.id %}" 
+                class="h-10 flex items-center justify-center px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+                Cancel
+                </a>  
+            </div>
+        </form>
+    </div>
+    {% endif%}
+</div>
+{% endblock %}

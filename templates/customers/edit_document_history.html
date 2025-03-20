@@ -1,0 +1,72 @@
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+<!-- Extends the base layout 'ContainerLayoutWhite.html', which likely contains a consistent structure for the page -->
+
+{% block title %}Document Edit History{% endblock %}
+<!-- Sets the page title to "Document Edit History" -->
+
+{% block content %}
+<div class="text-center">
+  <!-- Centers all content within this div -->
+
+  <h1 class> Edit History</h1>
+  <!-- Main heading for the page -->
+
+  <h2>
+    Document for {{ customer }}
+  </h2>
+  <!-- Displays which customer's document history is being viewed -->
+
+  <div class="mt-4">
+    <!-- Adds top margin for spacing -->
+
+    {% for entry in history %}
+    <!-- Loops through the 'history' list, displaying each entry -->
+
+      <div class="mb-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Creates a styled container for each history entry with padding, shadow, and border -->
+
+        <p class="mb-1">
+          <span class="font-bold">Edited By:</span> {{ entry.edited_by }}
+        </p>
+        <!-- Displays who edited the document -->
+
+        <p class="mb-1">
+          <span class="font-bold">Edited At:</span> {{ entry.edited_at }}
+        </p>
+        <!-- Displays when the document was edited -->
+
+        <p>
+          <span class="font-bold">Previous File Name:</span> {{ entry.previous_file_name }}
+        </p>
+        <!-- Shows the previous name of the file before the edit -->
+
+        <p>
+          <span class="font-bold">Previous File Type:</span> {{ entry.previous_file_type }}
+        </p>
+        <!-- Shows the previous file type before the edit -->
+
+        <p>
+          <span class="font-bold">Previous File Detail:</span> {{ entry.previous_file_detail }}
+        </p>
+        <!-- Displays additional details about the previous version of the file -->
+
+      </div>
+    {% empty %}
+      <!-- If no history entries exist, display a message indicating that no edits have been made -->
+      <div class="text-gray-600">No edits yet.</div>
+    {% endfor %}
+  </div>
+
+  <div class="my-4 text-center">
+    <!-- Adds vertical spacing and centers the button -->
+
+    <a href="{% url 'view_customer_profile' customer.id %}" 
+         class="inline-flex items-center px-4 py-2 bg-blue-700 text-white font-semibold rounded-md shadow 
+                hover:bg-blue-600 transition duration-300">
+        Back to {{ customer }}'s profile
+    </a>
+    <!-- Button linking back to the customer's profile page, styled with padding, colors, and hover effects -->
+  </div>
+</div>
+{% endblock %}
+<!-- Ends the 'content' block that was defined in the extended layout -->

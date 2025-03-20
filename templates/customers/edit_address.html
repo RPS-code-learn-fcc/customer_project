@@ -1,0 +1,54 @@
+<!-- Extend the base layout template -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+
+<!-- Update the Title of the page dynamically with the customer's name -->
+{% block title %}Edit Customer {{address}} {% endblock %}
+{% block content %}
+<div class="p-5 w-full" >
+    <!-- Page heading displaying the title and the customer's name -->
+    <h1 class="text-center">Edit Address for {{ customer }}:</h1>
+    
+    <!-- Form starts here, using the POST method to submit data -->
+    <form method="post" class="w-full">
+        <!-- CSRF token for security to prevent cross-site request forgery attacks -->
+        {% csrf_token %}
+
+        <!-- Display any non-field errors (errors that are not tied to a specific form field) -->
+        {% if form.non_field_errors %}
+            <div class="errorlist">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        <!-- Loop through each field in the form -->
+        {% for field in form %}
+
+            <!-- Check if the field is a checkbox -->
+            {% if field.field.widget.input_type == 'checkbox' %}
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <!-- Display the checkbox input field -->
+                    {{ field }}
+                    <!-- Label for the checkbox, positioned after it -->
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                </div>
+            {% else %}
+                <!-- For all other input types (text, email, etc.), display the label above the input field -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    <!-- Render the input field -->
+                    {{ field }}
+                    <!-- Display any validation errors related to this field -->
+                    {{ field.errors }}
+                </div>
+            {% endif %}
+
+        {% endfor %}
+        <div class="flex justify-center mt-4 ">
+            <button type="submit" class="px-4 rounded">
+                Save Changes
+            </button> <!-- Button to submit the form and save customer edits -->
+        </div>
+    </form>
+</div>
+{% endblock %}

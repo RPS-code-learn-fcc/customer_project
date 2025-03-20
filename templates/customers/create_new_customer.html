@@ -1,0 +1,16 @@
+<!-- Extend a predefined layout -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page -->
+{% block title %}Create a New Customer!{% endblock %}
+
+<!-- Where the content goes: Signup form-->
+{% block content %}
+<div id="signup-container" class="min-h-[70vh] w-[100%] overflow-auto">
+    <div >
+        
+        <!-- Where the signup form snippet goes: used for htmx requests -->
+        {% include 'customers/partials/signup_form.html' %}
+    </div>
+</div>
+{% endblock %}

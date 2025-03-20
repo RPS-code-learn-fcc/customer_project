@@ -1,0 +1,83 @@
+
+<!-- Load in Static-->  
+{% load static %}  
+  
+<!-- Individiual Customer information -->  
+<!-- Use an article tag as it is self-contained content-->
+<article class="flex flex-col shadow-md p-4 mb-4 bg-white">  
+  <!-- Header Section: User profile / image & timestamp (the user that created the customer)-->  
+  <div class="flex items-center justify-between align-center p-4 h-14 bg-gray-100">  
+    <h3 class="text-start leading-5 mr-1 pt-2">  
+      <a class="flex items-center gap-1 mb-4" href="{% url 'userprofile-email' customer.creator.short_name %}">  
+        <img class="w-8 h-8 object-cover rounded-lg" src="{{ customer.creator.profile_image }}">  
+        <span class="text-sm text-gray-400 hover:underline">@{{ customer.creator.short_name }}</span>  
+      </a>  
+    </h3>  
+    <div class="text-sm text-gray-400 truncate">
+      <a class="flex items-center gap-1 mb-4" href="">  
+        <span class="text-sm text-gray-400 hover:underline">{{ customer.created_at }}</span>  
+      </a>  
+    </div>  
+  </div>  
+
+  <!-- Customer Details Section -->  
+  <div class="p-4 pb-2 bg-gray-200">
+    <div class="customer-details space-y-4 {% if customer.is_inactive %} opacity-25 pointer-events-none {% endif %}">  
+
+      <!-- If Mailing Flag is True, Show Only Name and Mailing Address for ACTIVE customers -->
+      {% if mailing_flag and not customer.is_inactive %}
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          <h4>{{ customer.display_name }}</h4>  
+          <p><strong>Mailing Address:</strong> {{ customer.mailing_address }} ({{ customer.address_count }})</p>  
+        </div>  
+
+      <!-- If Mailing Flag is False, Show Full Customer Details -->
+      {% else %}
+        <!-- Customer Overview -->  
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          <h4>{{ customer.display_name }}</h4>  
+          <p><strong>Contact via:</strong> {{ customer.preferred_contact_methods_display }}</p>  
+        </div>  
+
+        <!-- Customer Interests Section -->  
+        {% if customer.interests.exists %}
+          <div class="flex flex-wrap gap-2 my-4 bg-gray-100 p-4 rounded">  
+            {% for interest in customer.interests.all %}  
+              <a href="{% url 'interest' interest.slug %}" class="bg-gray-500 rounded-lg px-3 py-1 hover:bg-gray-400 flex items-center">
+                <img src="{{ interest.icon_image_url }}" class="mr-2">
+                <!-- Show the interest name, only if it is not the default star-->
+                {% if interest.icon_image_url == '/static/images/star.svg' %}
+                  <span class="font-bold text-sm">{{ interest.name }}</span>
+                {% endif %}
+              </a>
+            {% endfor %}  
+          </div>  
+        {% endif %}
+
+        <!-- Address & Contact Information: use customer model properties for customers -->  
+        <div class="space-y-2 bg-gray-100 p-4 rounded">  
+          <p><strong>Mailing Address:</strong> {{ customer.mailing_address }} ({{ customer.address_count }})</p>  
+          <p><strong>Primary Phone:</strong> {{ customer.primary_phone_details }} ({{ customer.phone_count }})</p>  
+          <p><strong>Preferred Email:</strong> {{ customer.preferred_email }}({{ customer.email_count }})</p>  
+        </div>  
+
+        <!-- Associated Customer Content: Notes and Documents -->
+        <div class="space-y-2 bg-gray-100 p-4 rounded">
+          <!-- Count Notes -->
+          <p><strong>Notes:</strong> {{ customer.notes.count }}</p>
+          
+          <!-- Count Documents -->
+          <p><strong>Documents:</strong> {{ customer.documents.count }}</p>
+        </div>
+      {% endif %}
+    </div>  
+    <!-- Button to show full, detailed customer profile if it is not the customer info displayed for a mailing list -->  
+    {% if not mailing_flag %}
+    <div class="flex flex-wrap justify-center p-4">  
+      <button class="py-2 px-4 rounded">  
+        <a href="{% url 'view_customer_profile' customer.id %}">View Full Profile</a>  
+      </button>  
+    </div>  
+  {% endif %}
+  </div>  
+</article>

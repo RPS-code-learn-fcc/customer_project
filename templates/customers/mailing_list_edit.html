@@ -1,0 +1,258 @@
+<!--Extend layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page -->
+{% block title %}Create a New Mailing List{% endblock %}
+
+<!-- Insert Content here -->
+{% block content %}
+<div class="p-5">
+    <h1 class="text-center">Create a New Mailing List</h1>
+    <p class="text-center text-gray-500">
+        Create a mailing list by manually adding customers or addresses OR selecting an interest to include all related customers. 
+        You can combine both methods—each customer and address will be added only once.
+    </p>
+
+    <!-- Mailing List Container -->
+    <div id="mailing-list-form-container">
+    
+    <!-- Encapsulates all mailing list information in a form -->
+    <form method="post" ction="{% url 'edit-mailing-list' mailing_list.id %}">
+        {% csrf_token %}
+        <!-- Non-field Errors -->
+        <div class="nonfield-erros">
+        {% if form.non_field_errors %}
+            <div class="errorlist">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+        </div>
+
+
+        <!-- Name Field -->
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+            <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+            {{ form.name }}
+            {{ form.name.errors }}
+            <span class="text-gray-500 text-sm italic ml-3">{{form.name.help_text}}</span>
+        </div>
+
+ 
+
+
+    <!-- Selected Addresses: Shows the addresses that have been added to this list via HTMX -->
+    <div class="max-h-80 overflow-y-auto border border-gray-300 rounded-lg p-2">
+        <ul id="selected-addresses" class="list-group space-y-2 w-full">
+            {% for address in mailing_list.addresses.all %}
+                <li class="flex justify-between items-center p-3 bg-gray-100 rounded-lg w-full">
+                    <div class="flex flex-col">
+                        <!-- Retrieve Associated Customers -->
+                        {% with address.customer_addresses.all as customers %}
+                            {% if customers %}
+                                <span class="text-gray-600">Customer:
+                                    {% for customer in customers %}
+                                        <a href="{% url 'view_customer_profile' customer.id %}" class="text-blue-500 hover:underline">
+                                            {{ customer.display_name }}
+                                        </a>{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </span>
+                            {% else %}
+                                <span class="text-gray-500 italic">No associated customers</span>
+                            {% endif %}
+                        {% endwith %}
+                        <!-- Display Address -->
+                        <span class="font-semibold text-gray-700">
+                            {{ address.street }}, {{ address.city }}, {{ address.state }} {{ address.zip_code }}
+                        </span>
+
+                        
+                    </div>
+
+                    <!-- Remove Address from Mailing List Button -->
+                    {% for customer in address.customer_addresses.all %}
+                        <button 
+                            class="text-red-500 ml-2 bg-transparent hover:bg-transparent border border-transparent hover:border-gray-400 rounded-lg px-2 py-1 transition duration-200"
+                            hx-post="{% url 'remove_customer_address_from_mailing_list' mailing_list.id customer.id address.id %}"
+                            hx-trigger="click"
+                            hx-target="this"
+                            hx-vals='{"customer_id": "{{ customer.id }}", "address_id": "{{ address.id }}"}'
+                            hx-on::after-request="this.closest('li').remove();
+                                let hiddenField = document.getElementById('hidden-addresses');
+                                let addresses = hiddenField.value ? hiddenField.value.split(',') : [];
+                                addresses = addresses.filter(a => a !== '{{ address.id }}');
+                                hiddenField.value = addresses.join(',');"
+                        >
+                            X
+                        </button>
+                    {% endfor %}
+                </li>
+            {% empty %}
+                <p id="no-addresses" class="text-gray-500 italic text-center">No addresses currently selected.</p>
+            {% endfor %}
+        </ul>
+    </div>
+
+        
+        <!-- Hidden input to store selected addresses -->
+        <input type="hidden" id="hidden-addresses" name="selected_addresses" 
+               value="{% for customer in mailing_list.customers.all %}{% for address in customer.addresses.all %}{{ address.id }},{% endfor %}{% endfor %}">
+        
+
+        <!-- Address Search Input w/ HTMX: dynamic search of customer addresses -->
+        <div class="my-6 space-y-4">
+            <!-- Address Search Input -->
+            <input 
+                type="search" 
+                id="address-search-input"
+                hx-get="{% url 'search-addresses' %}"
+                hx-target="#address-results"
+                hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+                class="w-full rounded-lg border border-gray-300 p-3 " 
+                placeholder="Search Addresses..."
+                name="search_mailing_address"
+            >
+        
+            <!-- Customer Search Input -->
+            <input 
+                type="search" 
+                id="customer-search-input"
+                hx-get="{% url 'search-customers' %}"
+                hx-target="#address-results"
+                hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+                class="w-full rounded-lg border border-gray-300 p-3" 
+                placeholder="Search Customers..."
+                name="search_mailing_customer"
+            >
+        </div>
+        
+        <!-- Address Search Results Section -->
+        <div id="address-results-container" class="m-4 p-4 border border-gray-300 rounded-lg min-h-[100px] bg-white shadow-sm">
+            <h3 class="text-lg font-semibold mb-3 text-center">Search Results:</h3>
+
+            <!-- Placeholder message when no search has been performed -->
+            <p id="search-placeholder" class="text-gray-500 italic text-center">Search a customer or address to add to the mailing list.</p>
+
+            <!-- Dynamic search results inserted here -->
+            <div id="address-results" class="space-y-2"></div>
+        </div>
+
+
+            <!-- Interests Selection -->
+        <div class="m-4 p-4 border border-gray-300 rounded-lg min-h-[100px] bg-white shadow-sm text-center">
+            <h3 class="text-xl pt-2 font-semibold mb-4">Select Interests</h3>
+
+            <!-- HTMX Target for Updating Total -->
+            <div id="interest-totals" class="text-lg font-medium text-gray-700">Adding 0 Customers</div>
+            
+            <div class="checkbox-buttons mt-2">
+                    <!-- Select All Interests Button -->
+                    <button type="button" id="select-all-interests"
+                    class="mt-3 py-2 px-4 rounded-lg transition">
+                    Select All Interests
+                </button>
+                {% for field in form %}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                        <div class="inline-block">
+                            <!-- Keep input separate from label to apply styles properly -->
+                            {{ field }}
+                            
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+        <!-- Save Button / Submit Form-->
+        <div class="flex justify-center my-4">
+            <button type="submit" class="px-4 rounded bg-blue-500 text-white">
+                Save Changes
+            </button>
+        </div>
+    </form>
+
+    <!-- Cancel Button / Return to View All Mailing Lists -->
+    <a href="{% url 'list-mailing-lists' %}" class="inline-block text-gray-600 border border-gray-400 hover:bg-gray-200 py-2 px-4 rounded-lg transition">
+    Cancel
+    </a>
+        
+    </div>
+{% endblock %}
+{% block script %}
+<script>
+    document.querySelector("form").addEventListener("submit", function() {
+        let hiddenField = document.getElementById("hidden-addresses");
+        console.log("Submitting form with addresses:", hiddenField.value);
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        let selectedAddresses = document.getElementById("selected-addresses");
+        let noAddressesMessage = document.getElementById("no-addresses");
+
+        // Observer for changes in the selected addresses list
+        const observer = new MutationObserver(() => {
+            noAddressesMessage.style.display = selectedAddresses.children.length > 0 ? "none" : "block";
+        });
+
+        observer.observe(selectedAddresses, { childList: true });
+    });
+    document.addEventListener("DOMContentLoaded", function() {
+        let addressResults = document.getElementById("address-results");
+        let searchPlaceholder = document.getElementById("search-placeholder");
+
+        // Observer for changes in the search results list
+        const observer = new MutationObserver(() => {
+            searchPlaceholder.style.display = addressResults.children.length > 0 ? "none" : "block";
+        });
+
+        observer.observe(addressResults, { childList: true });
+    });
+    function getSelectedInterests() {
+        let selectedInterests = [];
+        document.querySelectorAll("input[type='checkbox']:checked").forEach(checkbox => {
+            console.log("Checkbox ID:", checkbox.value, "Checked:", checkbox.checked);
+            selectedInterests.push(checkbox.value);
+        });
+        console.log("Final Selected Interests:", selectedInterests);
+        return selectedInterests;
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".checkbox-buttons input[type='checkbox']").forEach(checkbox => {
+        checkbox.addEventListener("change", function () {
+            console.log("Checkbox changed:", this.value, "Checked:", this.checked);
+
+            let selectedInterests = getSelectedInterests();
+            console.log("Sending request with interests:", selectedInterests);
+
+            fetch("{% url 'interest-customer-count' %}?selected_interests=" + selectedInterests.join(","), {
+                method: "GET",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("Response received:", data);
+                document.getElementById("interest-totals").textContent = `Adding ${data.total_customers} Customers`;
+            })
+            .catch(error => console.error("Error fetching customer count:", error));
+        });
+    });
+});
+document.addEventListener("DOMContentLoaded", function () {
+        const selectAllButton = document.getElementById("select-all-interests");
+        const checkboxes = document.querySelectorAll(".checkbox-buttons input[type='checkbox']");
+
+        selectAllButton.addEventListener("click", function () {
+            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = !allChecked;  // Toggle state
+                checkbox.dispatchEvent(new Event("change"));  // Trigger change event
+            });
+
+            // Update button text based on state
+            selectAllButton.textContent = allChecked ? "Select All Interests" : "Deselect All Interests";
+
+            // Toggle selected styles
+            selectAllButton.classList.toggle("selected", !allChecked);
+        });
+    });
+</script>
+{% endblock %}

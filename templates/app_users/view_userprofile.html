@@ -1,0 +1,104 @@
+<!-- Extends a preset layout -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Loads in static -->
+{% load static %}
+
+<!-- Title -->
+{% block title %}View {{ profile.short_name }}'s profile {% endblock %}
+
+<!--Content Block-->
+{% block content %}
+<div id="userprofile">
+   <div class="userprofile-container bg-gray-300 rounded-lg p-6 ">
+      
+      <!-- Header -->
+      <h1 class="text-center text-3xl font-bold mb-6 mt-2">My User Profile</h1>
+      
+      <!-- Profile Image and Username -->
+      <div class="text-center mb-8">
+         <img 
+            class="w-40 h-40 rounded-lg object-cover mx-auto border-8 border-white-300 shadow" 
+            src="{{ profile.profile_image }}" 
+            alt="Logged in User Profile Image" 
+         />
+
+         <h2 class="text-xl font-semibold m-1">@{{ profile.short_name }}</h2>
+      </div>
+
+      <!-- Two Columns: Left (Bio & Details), Right (Interests) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 text-center bg-gray-100 rounded-lg p-6 ">
+
+         <!-- Left Column: Bio, Name, and Job Title -->
+         <div class="flex flex-col items-center">
+            <h3 class="text-lg font-medium">Name: <span class="text-gray-800">{{ profile.user_name }}</span></h3>
+
+            <!-- Bio Section -->
+            <div class="userprofile-bio m-2 text-gray-700">
+               <h3 class="font-semibold">Biography:</h3>
+               {% if profile.bio %}
+                  <p>{{ profile.bio }}</p>
+               {% else %}
+                  <p class="text-gray-500">This is the default Biography. Edit Your Profile To Add Your Own!!</p>
+               {% endif %}
+            </div>
+
+            <!-- Job Title Section -->
+            <div class="userprofile-job-title m-2 text-gray-700">
+               <h3 class="font-semibold">Job Title:</h3>
+               {% if profile.job_title %}
+                  <p>{{ profile.job_title }}</p>
+               {% else %}
+                  <p class="text-gray-500">Conservation Specialist</p>
+               {% endif %}
+            </div>
+         </div>
+
+         <!-- Right Column: Interests -->
+         <div class="profile-interests rounded-lg p-6">
+            <h3 class="text-lg font-medium rounded-lg mb-4 text-center">My Interests:</h3>
+            {% if profile.interests.exists %}
+               <div class="flex flex-wrap justify-center gap-4">
+                  {% for interest in profile.interests.all %}
+                        <div class="px-4 py-2 bg-[#88a27e] text-white border border-white rounded">
+                           {{ interest.name }}
+                        </div>
+                  {% endfor %}
+               </div>
+            {% else %}
+               <p class="text-center italic">No Interests Yet. Edit Profile to Add Interests.</p>
+            {% endif %}
+         </div>
+        
+      </div>
+
+      <!-- Footer Section -->
+      <!-- Profile Created, Last Login, last profile login -->
+      <div class="text-center mt-6 mb-2">
+
+         <!-- Only show certain sensitive fields to the logged in user -->
+         {% if profile.email == request.user.email %}
+
+         <p class="text-sm italic text-black">
+            Profile Last Updated: {{ profile.profile_updated }}
+         </p>
+         <p class="text-sm italic text-black">
+            Last login: {{ profile.last_login }}
+         </p>
+         {% endif %}
+
+         <!-- Fields to show all users -->
+         <p class="text-sm italic text-black mb-2">
+            User Profile was Created: {{ profile.time_since_joined }} ago.
+         </p>
+    
+         <!-- Edit Profile Button -->
+         <a href="{% url 'userprofile-edit' profile.short_name %}">
+            <button class="rounded-lg mt-6 mb-2">
+               Edit Profile
+            </button>
+         </a>
+      </div>
+   </div>
+</div>
+{% endblock %}

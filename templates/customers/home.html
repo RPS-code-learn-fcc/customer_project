@@ -1,0 +1,244 @@
+<!-- Home extends a predefined layout-->
+{% extends 'layouts/home_layout.html' %}
+
+<!-- Updates Page Title-->
+{% block title %}Home{% endblock %}
+
+<!-- Inserts content into the content block of base.html-->
+{% block content %}
+
+<!-- Home page container -->
+<div class="flex flex-col items-center mr-10% p-4 bg-gray-100 mt-0 shadow-lg" style="max-width: 100%; min-height: 100vh;">   
+   <!-- Tab navigation container: Holds all the search options -->
+   <div class="flex flex-wrap justify-center gap-4  border-b-2 mb-4 w-full h-full mb-2">        
+
+        <!-- Search by Customer Button -->
+        <button 
+            id="customer-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('customer')">
+            Search by Customer
+        </button>
+
+        <!-- Search by Address Button -->
+        <button 
+            id="address-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('address')">
+            Search by Address
+        </button>
+
+        <!-- Search by Phone Button -->
+        <button 
+            id="phone-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('phone')">
+            Search by Phone
+        </button>
+
+        <!-- Search by Email Button -->
+        <button 
+            id="email-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('email')">
+            Search by Email
+        </button>
+
+        <!-- Search by Document Button -->
+        <button 
+            id="document-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('document')">
+            Search by Document
+        </button>
+
+        <!-- Search by Note Button -->
+        <button 
+            id="note-tab" 
+            class="tab-btn text-white bg-gray-700 font-semibold py-2 px-4 rounded-lg border-b-4 border-transparent hover:border-[#3d5265]"
+            onclick="showTab('note')">
+            Search by Note
+        </button>
+        
+    </div> <!-- End of tab navigation container -->
+
+      
+     <!-- Content for Search by Customer -->
+     <div id="customer-search" class="tab-content w-full bg-gray-200 p-5 min-h-screen">     
+        <!-- Search Input for Customers -->
+        <!-- HTMX: Specifies the target div where the response will be placed: 'customer-results' -->
+        <!-- 
+            HTMX: Triggers the request under two conditions: 
+            1. When the input value changes (with a 750ms delay to avoid too many requests)
+            2. When the 'Enter' key is pressed 
+            This is the case for all search inputs below: address, notes, emails, etc.
+        -->
+
+        <input 
+            type="search" 
+            id="customer-search-input"
+            hx-get="{% url 'home' %}"
+            hx-target="#customer-results"
+            hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+            name="search_customer" 
+            class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+            placeholder="Search Customers..."
+         >
+        <!-- Example to be displayed to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'Mary'....'Smith'....'Mary Smith'
+        </span>
+        <!-- Container where the search results will be loaded dynamically-->
+         <div id="customer-results" class="mt-4">
+             {% include 'customers/partials/customers_list.html' %}
+         </div>
+     </div>
+
+    <!-- Content for Search by Address -->
+    <div id="address-search" class="tab-content w-full hidden bg-gray-200 p-5 min-h-screen">
+        <input 
+            type="search" 
+            id="address-search-input"
+            hx-get="{% url 'search-addresses' %}"
+            hx-target="#address-results"
+            hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+            name="search_address" 
+            class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+            placeholder="Search Addresses..."
+        >
+        <!-- Example to be displayed to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'62 W Clinton St'....'Millersburg'....'OH'..."44654"
+        </span>
+        <!-- Container where the address search results will be displayed-->
+        <div id="address-results" class="mt-4">
+        </div>
+    </div>
+    
+    <!-- Content for Search by Phone -->
+    <div id="phone-search" class="tab-content w-full hidden bg-gray-200 p-5 min-h-screen">
+        <input 
+            type="search" 
+            id="phone-search-input"
+            hx-get="{% url 'search-phones' %}"
+            hx-target="#phone-results"
+            hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+            name="search_phone" 
+            class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+            placeholder="Search Phone Numbers"
+        >
+        <!-- Example to be displayed to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'330-674-2811' or '3306742811' -- Must enter full phone number to search
+        </span>
+        <!-- Container where the address search results will be displayed-->
+        <div id="phone-results" class="mt-4">
+        </div>
+    </div>
+
+    <!-- Content for Search by Email -->
+    <div id="email-search" class="tab-content w-full hidden bg-gray-200 p-5 min-h-screen">
+        <input 
+            type="search" 
+            id="email-search-input"
+            hx-get="{% url 'search-emails' %}"
+            hx-target="#email-results"
+            hx-trigger="input changed delay:750ms, keyup[key=='Enter']"
+            name="search_email" 
+            class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+            placeholder="Search Emails..."
+        >
+        <!-- Example to be displayed to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'dsherman@co.holmes.oh.us'
+        </span>
+        <!-- Container where the email search results will be displayed-->
+        <div id="email-results" class="mt-4">
+        </div>
+    </div>
+
+     <!-- Content for Search by Document -->
+     <div id="document-search" class="tab-content w-full hidden bg-gray-200 p-5 min-h-screen">
+        <input 
+             type="search" 
+             id="document-search-input"
+             hx-get="{% url 'search-documents' %}"
+             hx-target="#document-results"
+             hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+             name="search_document" 
+             class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+             placeholder="Search Documents..."
+         >
+        <!-- Example to be displayed to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'Camp_Registration_2025.pdf' or 'Customer_Name_Soil_Test_result_YYYY.pdf'
+        </span>
+        <!-- Container where the document search results will be displayed-->
+        <div id="document-results" class="mt-4">
+        </div>
+     </div>
+
+     <!-- Content for Search by Document -->
+    <div id="note-search" class="tab-content w-full hidden bg-gray-200 p-5 min-h-screen">
+        <input 
+            type="search" 
+            id="note-search-input"
+            hx-get="{% url 'search-notes' %}"
+            hx-target="#note-results"
+            hx-trigger="input changed delay:500ms, keyup[key=='Enter']"
+            name="search_note" 
+            class="form-control-sm w-full rounded-lg border border-gray-300 p-2" 
+            placeholder="Search Notes..."
+        >
+        <!--Example to guide the user-->
+        <span class="block mt-2 ml-3 text-sm text-gray-500 italic">
+            <b>Ex: </b>'Note Content'
+        </span>
+        <!-- Container where the note search results will be displayed-->
+        <div id="note-results" class="mt-4">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+{% block script %}
+<script>
+    // custom function to determine the active search tab on the home page depending on the tab that the user clicks
+    function showTab(tab) {
+    
+        // Hide all tab contents to start with
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.add('hidden');
+        });
+    
+        // Reset the styling of all tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('bg-gray-700', 'text-white');
+            btn.classList.add('bg-white', 'text-gray-500', 'border-gray-500');
+        });
+    
+        // Show (remove hidden class) the selected tab content with special styling
+        const selectedTabContent = document.getElementById(`${tab}-search`);
+        if (selectedTabContent) {
+            selectedTabContent.classList.remove('hidden');
+        } 
+
+        // Set the selected tab as active & apply active styling
+        const activeTab = document.getElementById(`${tab}-tab`);
+        if (activeTab) {
+            activeTab.classList.remove('bg-white', 'text-gray-500', 'border-gray-500');
+            activeTab.classList.add('bg-gray-700', 'text-white');
+        } else {
+            console.error(`Tab button not found for: ${tab}-tab`);
+        }
+    }
+</script>
+    
+  
+{% endblock %}                                 
+
+ 
+
+ 

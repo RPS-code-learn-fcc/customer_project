@@ -1,0 +1,64 @@
+<!--Extend layout-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+<!-- Update the Title of the page -->
+{% block title %}Edit Phone for {{customer}} {% endblock %}
+
+{% block content %}
+<div class="p-5 w-full" >
+<!-- Page heading displaying the title and the customer's name -->
+<h1 class="text-center">Edit Phone Number for {{ customer }}:</h1>
+
+<!-- Form starts here, using the POST method to submit data -->
+<form method="post" class="w-full">
+    <!-- CSRF token for security to prevent cross-site request forgery attacks -->
+    {% csrf_token %}
+
+    <!-- Display any non-field errors (errors that are not tied to a specific form field) -->
+    {% if form.non_field_errors %}
+    <div class="errorlist">
+        {{ form.non_field_errors }}
+    </div>
+    {% endif %}
+
+    <!-- Loop through each field in the form -->
+    {% for field in form %}
+
+        <!-- Check if the field is a checkbox input -->
+        {% if field.field.widget.input_type == 'checkbox' %}
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <!-- Display the checkbox input field -->
+                {{ field }}
+                <!-- Label for the checkbox, positioned after the input -->
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            </div>
+        {% else %}
+            <!-- For all other input types (text, number, email, etc.), display the label above the input field -->
+            <div class="form-group" style="margin-bottom: 1.5rem;">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                <!-- Render the input field -->
+                {{ field }}
+                <!-- Display any validation errors related to this field -->
+                {{ field.errors }}
+            </div>
+        {% endif %}
+
+    {% endfor %}
+        <!-- Submit & Cancel Buttons -->
+        <div class="flex justify-center items-center space-x-4 mt-4">
+            <!-- Primary Action: Save Changes -->
+            <button type="submit" 
+                    class="h-10 px-4 py-2 !bg-blue-600 text-white rounded-lg hover:!bg-blue-700 transition duration-300">
+                Save Changes
+            </button>
+
+            <!-- Secondary Action: Cancel -->
+            <a href="{% url 'view_customer_profile' customer.id %}" 
+            class="h-10 flex items-center justify-center px-4 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition duration-300">
+                Cancel
+            </a>  
+        </div>
+    </form>
+</div>
+{% endblock %}
+

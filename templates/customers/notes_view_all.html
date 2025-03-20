@@ -1,0 +1,27 @@
+<!--View all Notes-->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+{% block title %} Notes: {{customer}}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-6">  
+  <!-- Loops through the notes and shows each note content and history-->
+  {% for note in notes %}
+    <div class="mb-6 border border-gray-300 rounded-lg p-4">
+      <!-- Includes the detailed note versions & history -->
+      {% include 'customers/note_long.html' with note=note customer=customer hide_buttons=True show_history=False %}
+    </div>
+  {% empty %}
+    <p class="text-center text-gray-500">No notes available.</p>
+  {% endfor %}
+  
+  <div class="my-4 text-center">
+    <a href="{% url 'view_customer_profile' customer.id %}" 
+         class="inline-flex items-center px-4 py-2 bg-blue-700 text-white font-semibold rounded-md shadow 
+                hover:bg-blue-600 transition duration-300">
+        Back to {{customer}}'s profile
+      </a>
+  </div>
+  
+</div>
+{% endblock %}

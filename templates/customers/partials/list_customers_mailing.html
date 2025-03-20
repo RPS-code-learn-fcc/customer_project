@@ -1,0 +1,23 @@
+<div>
+    {% if customers %}
+        <!-- Loop through the list of customers -->
+        {% for customer in customers %}
+            <!-- Include the partial template for displaying each individual customer -->
+            {% include 'customers/customer_mailing.html' %}
+        {% endfor %}
+    {% else %}
+        <!-- Display a message if no customers match the search criteria -->
+        <p class="text-gray-500 text-center">No customers found.</p>
+    {% endif %}
+
+    <!-- Infinite scroll logic -->
+    <div 
+        hx-get="{% url 'search-customers' %}?page={{ page|add:1 }}{% if search_customer %}&search_mailing_customer={{ search_customer }}{% endif %}"
+        hx-trigger="revealed"
+        hx-target="this"
+        hx-swap="outerHTML"
+>
+    <p class="text-center text-gray-400">Loading more customers...</p>
+</div>
+
+</div>

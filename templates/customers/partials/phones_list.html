@@ -1,0 +1,22 @@
+{% if customers %}
+    {% for customer in customers %}
+        <!-- Include each individual customer phone component -->
+        {% include 'customers/phone.html' with show_customer_name=True %}
+    {% endfor %}
+{% else %}
+    <!-- Message displayed when no matching customers are found -->
+    <p class="text-gray-500 text-center">No customers with corresponding phone number found.</p>
+{% endif %}
+
+<!-- Infinite scroll logic: Load more results if there are additional pages -->
+{% if customers.has_next %}
+    <div 
+        hx-get="{% url 'search-phones' %}?page={{ customers.next_page_number }}&search_phones={{ search_phones }}"
+        hx-trigger="revealed"
+        hx-target="this"
+        hx-swap="outerHTML"
+    >
+        <p class="text-center text-gray-400">Loading more customers...</p>
+    </div>
+{% endif %}
+

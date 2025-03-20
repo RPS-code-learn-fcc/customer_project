@@ -1,0 +1,28 @@
+<!-- Extends a predetermined layout -->
+{% extends 'layouts/ContainerLayoutWhite.html' %}
+
+{% block title %}Add Contact Method{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Add a New Contact Method</h1>
+    <form method="post">
+        {% csrf_token %}  <!-- CSRF token for security -->
+        
+        <!-- Display form fields -->
+        <div class="space-y-4">
+            {{ form.as_p }}  <!-- Render the form fields as paragraphs -->
+        </div>
+
+        <!-- Form buttons -->
+        <div class="mt-6 flex justify-between">
+            <a href="{% url 'home' %}" class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                Cancel
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md transition duration-300 ease-in-out">
+                Save Contact Method
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,131 @@
+{% load static %}
+{% if show_customer_name %}
+<div class="square">
+    <!-- Top section with author and timestamp -->
+    <div class="flex items-center flex-col justify-between px-4 pt-4 pb-2">
+        <div class="flex items-center gap-2">
+            <img class="w-10 h-10 object-cover rounded-lg" src="{{ document.author.profile_image }}">
+            <span class="text-sm text-gray-400 hover:underline">@{{ document.author.short_name }}</span>
+        </div>
+        <div class="text-sm text-gray-400 mt-1">{{ document.created_at }}</div>
+    </div>
+
+    <!-- Document content -->
+    <div class="p-4 text-center">
+        <div class="document-details">
+            <a href="{{ document.file.url }}" target="_blank" class="text-sm text-blue-600 hover:underline">
+                {{ document }}
+            </a>
+         
+            {% if document.file_detail %}
+                <p class="text-sm text-gray-500 mt-1">{{ document.file_detail }}</p>
+            {% endif %}
+            
+        </div>
+        <!-- Display associated customer -->
+        <div class="mt-2 text-sm text-gray-500">
+          <strong>Customer:</strong>
+          <a href="{% url 'view_customer_profile' document.customer.id %}" class="block text-lg font-semibold text-gray-700 hover:underline hover:text-blue-500 mt-1">
+              {{ document.customer.display_name }}
+          </a>
+          {% if document.customer.is_inactive %}
+              <span class="inline-block px-2 py-1 mt-1 text-xs font-semibold text-red-800 bg-red-200 rounded-md">
+                  INACTIVE
+              </span>
+          {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Edit and Delete buttons -->
+    {% if not document.customer.is_inactive %}
+    <div class="my-2 px-4 flex space-x-4">
+        <a href="{% url 'document_edit' document.customer.id document.id %}" 
+        class="bg-gray-200 hover:bg-gray-300 text-gray-600 py-2 px-4 rounded-md shadow-sm transition-colors duration-300 ease-in-out"
+        >
+            Edit Document
+        </a>
+        <a href="{% url 'document_delete' document.customer.id document.pk %}" 
+        class="bg-red-200 hover:bg-red-700 text-red-600 hover:text-white py-2 px-4 rounded-md shadow-sm transition-colors duration-300 ease-in-out"
+        >
+            Delete Document
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+{% else %}
+<!-- Associated Documents for the full profile view -->
+<div class="space-y-4 bg-gray-100  border-4 border-white p-4 rounded my-3 shadow-sm"> 
+  {% if customer.documents.exists %}
+  <h3 class="text-lg font-semibold text-center">{{ customer.documents.count }} Document{{ customer.documents.count|pluralize }}:</h3>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for document in customer.documents.all %}
+    <div class="bg-white shadow-sm rounded-md p-4 flex flex-col justify-between border border-gray-300">
+        <!-- Document File or Placeholder -->
+        <div class="mb-2 border-b border-gray-300 pb-2">
+          {% if document.file %}
+              <a href="{{ document.file.url }}" 
+                class="relative group text-sm font-semibold hover:underline hover:text-gray-700 break-words" 
+                target="_blank">
+                  {{ document }}
+
+                  <!-- Tooltip -->
+                  <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 px-2 py-1 text-xs text-white bg-gray-800 rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+                      Added on: {{ document.created_at }}
+                  </span>
+              </a>
+          {% else %}
+              <span class="text-red-500 break-words">No file associated with this document</span>
+          {% endif %}
+        </div>
+        <!-- Author Profile & Document Info in One Line -->
+        <div class="flex items-center justify-center space-x-4 mt-1 border-b border-gray-300 pb-2">
+          <a class="inline-flex items-center space-x-2" href="{% url 'userprofile-email' customer.creator.short_name %}">
+            <!-- Profile Image -->
+            <img class="w-8 h-8 object-cover rounded-lg" src="{{ document.author.profile_image }}">
+            
+            <!-- Username -->
+            <span class="text-sm text-gray-400 hover:underline">@{{ document.author.short_name }}</span>
+          </a>
+        </div>
+
+        <!-- Document Actions -->
+        <div class="flex justify-center items-center space-x-2 mt-4 pb-2">
+            {% if request.user == document.author %}
+                <a href="{% url 'document_edit' customer.pk document.pk %}" 
+                  class="bg-blue-500 hover:bg-blue-600 text-white text-xs py-1 px-3 rounded-md">
+                  Edit
+                </a>
+                <a href="{% url 'document_delete' customer.pk document.pk %}" 
+                  class="bg-red-500 hover:bg-red-600 text-white text-xs py-1 px-3 rounded-md">
+                  Delete
+                </a>
+            {% endif %}
+        </div>
+        <div class="flex justify-center items-center space-x-2 mt-4 pb-2">
+              <a href="{% url 'document_edit_history' customer.pk document.pk %}" 
+                class="bg-green-500 hover:bg-green-600 text-white text-xs py-1 px-3 rounded-md">
+                Edit History
+              </a>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+
+  {% else %}
+  <p>No documents available.</p>
+  {% endif %}
+  <div class="mt-4 text-center border-t border-gray-300">
+    <a href="{% url 'customer-add-document' customer.id %}" 
+    class="inline-flex items-center mt-4 px-4 py-2 bg-gray-300 text-blue-600 font-semibold rounded-lg 
+          hover:bg-gray-200 hover:text-blue-700 transition duration-300">
+    Add Document
+    </a>
+  </div>
+
+</div>
+{% endif %}
+
+
+

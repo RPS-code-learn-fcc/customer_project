@@ -53,6 +53,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage', # django cloudinary
+    'cloudinary',
     'django.contrib.sites', #django-allauth
     'admin_honeypot',
     'allauth',
@@ -123,7 +125,7 @@ DATABASES = {
     }
 }
 
-POSTGRES_LOCALLY = False
+POSTGRES_LOCALLY = True
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True:
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
@@ -181,7 +183,20 @@ USE_TZ = True
 
 # Media files (user uploaded images, documents, etc.)
 MEDIA_URL = '/media/'  # URL for accessing media files (e.g., http://example.com/media/)
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path 
+
+
+
+if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True:
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path 
+
+# cloudinary storage:
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': env('CLOUD_NAME'),
+    'API_KEY': env('CLOUD_API_KEY'),
+    'API_SECRET': env('CLOUD_API_SECRET')
+}
 
 # ---- ADD the following to integrate with Django allauth ------
 ACCOUNT_USERNAME_REQUIRED = False

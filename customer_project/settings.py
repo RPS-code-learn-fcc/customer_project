@@ -125,7 +125,7 @@ DATABASES = {
     }
 }
 # POSTGRES_LOCALLY = False (PostgreSQL is being used remotely), POSTGRES_LOCCALLY = True (local use of PostgreSQL)
-POSTGRES_LOCALLY = True
+POSTGRES_LOCALLY = False
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # if the production value is set -> it is using render.com, else it is using postgreSQL locally, else it is using sql lite in production
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
@@ -192,11 +192,10 @@ CLOUDINARY_STORAGE = {
 }
 
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # checks where postgres is running (locally or through render.com, else it uses the development
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-    CLOUDINARY_RAW_STORAGE = 'cloudinary_storage.storage.RawMediaCloudinaryStorage'  # For raw 
+    STORAGES = { "default": { "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", }, "staticfiles": { "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage", }, }
+
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path - in storage
-
 
 # ---- ADD the following to integrate with Django allauth ------
 ACCOUNT_USERNAME_REQUIRED = False

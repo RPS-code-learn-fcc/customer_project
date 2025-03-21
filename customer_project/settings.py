@@ -124,9 +124,9 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-POSTGRES_LOCALLY = True
-if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True:
+# POSTGRES_LOCALLY = False (PostgreSQL is being used remotely), POSTGRES_LOCCALLY = True (local use of PostgreSQL)
+POSTGRES_LOCALLY = False
+if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # if the production value is set -> it is using render.com, else it is using postgreSQL locally, else it is using sql lite in production
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
 # Password validation
@@ -184,12 +184,10 @@ USE_TZ = True
 # Media files (user uploaded images, documents, etc.)
 MEDIA_URL = '/media/'  # URL for accessing media files (e.g., http://example.com/media/)
 
-
-
-if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True:
+if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # checks where postgres is running (locally or through render.com, else it uses the development
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
-    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path 
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path - in storage
 
 # cloudinary storage:
 CLOUDINARY_STORAGE = {

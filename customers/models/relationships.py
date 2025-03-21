@@ -9,6 +9,7 @@ from django.core.validators import RegexValidator, MinLengthValidator, MaxLength
 # provides an interface to access static files & file storage paths
 from django.contrib.staticfiles.storage import staticfiles_storage
 
+
 def validate_file_type(value):
     """
     Validator to ensure only PDFs and Word documents are uploaded.

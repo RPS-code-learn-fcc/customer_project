@@ -16,6 +16,9 @@ from django.contrib.staticfiles.storage import staticfiles_storage
 # import to perfrom regular expression validation, length validation validation & validation of the file extension of the image uploaded:
 from django.core.validators import RegexValidator, MaxLengthValidator, FileExtensionValidator
 
+# to resize image fields:
+from django_resized import ResizedImageField
+
 class CustomUserManager(UserManager):
     """ 
         Sets up a Custom User Manager to handle the creation of new users
@@ -83,7 +86,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     profile_updated = models.DateTimeField(blank=True, null=True)
     
     # set other custom user fields (all optional w/defaults provided):
-    image = models.ImageField(upload_to='profile_images/', validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'])], blank=True) # optional - only allow jpgs
+    image = ResizedImageField(size=[600,600], quality=85, upload_to='profile_images/', validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg'])], blank=True) # optional - only allow jpgs
     bio = models.TextField(null=True, blank=True, default="The lack of power to take joy in outdoor nature is as real a misfortune as the lack of power to take joy in books. --T. Roosevelt.", validators=[ MaxLengthValidator(500), RegexValidator(regex=r'^[a-zA-Z0-9\s.!?,-:;]+$', message="Only letters, numbers, spaces, and common punctuation are allowed. Max 500 characters.")])
     job_title = models.CharField(max_length=75, null=True, blank=True, default='Conservation Specialist', validators=[ MaxLengthValidator(50), RegexValidator(regex=r'^[a-zA-Z\s-]+$', message="Job Description can only contain letters and dashes.")])
     

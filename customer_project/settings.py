@@ -125,7 +125,7 @@ DATABASES = {
     }
 }
 # POSTGRES_LOCALLY = False (PostgreSQL is being used remotely), POSTGRES_LOCCALLY = True (local use of PostgreSQL)
-POSTGRES_LOCALLY = True
+POSTGRES_LOCALLY = False
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # if the production value is set -> it is using render.com, else it is using postgreSQL locally, else it is using sql lite in production
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
@@ -223,8 +223,6 @@ ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_LOGOUT_REDIRECT_URL = "/customers/"
 ACCOUNT_SIGNUP_PASSWORD_VERIFICATION = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None 
-# sends email to terminal for development purposes
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # --- implement signup via email -----
 

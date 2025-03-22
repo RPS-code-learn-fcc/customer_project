@@ -7,13 +7,13 @@
 <!-- Custom html tag for main content area -->
 <div style="display: grid; grid-template-columns: 2fr 1fr; max-width: 70%; margin: 0 auto; padding: 1.5rem; gap: 1.5rem;">
     <!-- Main Content Area -->
-    <main style="grid-column: 1; border: 1px solid #e5e7eb; padding: 1rem;">
+    <main style="grid-column: 1; padding: 1rem;">
         {% block content %}
         {% endblock %}
     </main>
     
     <!-- Sidebar -->
-    <aside style="grid-column: 2; border: 1px solid #e5e7eb; padding: 1rem;">
+    <aside style="grid-column: 2; padding: 1rem;">
         {% include 'includes/sidebar.html' %}
     </aside>
 </div>

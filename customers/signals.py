@@ -37,11 +37,6 @@ def update_customers_and_addresses(sender, instance, action, **kwargs):
         # Update the mailing list addresses (assuming the mailing list model has an 'addresses' M2M field)
         instance.addresses.set(addresses)
 
-        # Print statements for debugging
-        print(f"Updated Customers in Mailing List: {[c.display_name for c in instance.customers.all()]}")
-
-
-
 @receiver(m2m_changed, sender=Customer.interests.through)
 def update_customer_mailing_lists(sender, instance, action, reverse, model, pk_set, **kwargs):
     """
@@ -57,9 +52,6 @@ def update_customer_mailing_lists(sender, instance, action, reverse, model, pk_s
             # Ensure the customer is active and has at least one valid mailing address
             if not instance.is_inactive and instance.addresses.filter(mailing_address=True).exists():
                 mailing_list.customers.add(instance)
-                print(f"Customer {instance.display_name} added to mailing list: {mailing_list.name}")
-            else:
-                print(f"ustomer {instance.display_name} NOT added due to inactivity or missing mailing address")
 
     elif action == "post_remove":
         # When interests are removed, check if the customer still belongs to any relevant mailing list
@@ -72,7 +64,6 @@ def update_customer_mailing_lists(sender, instance, action, reverse, model, pk_s
             # Also ensure the customer is active and has a valid mailing address
             if not remaining_interests.exists() or instance.is_inactive or not instance.addresses.filter(mailing_address=True).exists():
                 mailing_list.customers.remove(instance)
-                print(f"Customer {instance.display_name} removed from mailing list: {mailing_list.name}")
                 
 @receiver(post_save, sender=Address)
 def update_mailing_list_on_address_change(sender, instance, **kwargs):
@@ -91,11 +82,9 @@ def update_mailing_list_on_address_change(sender, instance, **kwargs):
             mailing_lists = CustomerMailingList.objects.filter(interests__in=customer.interests.all()).distinct()
             for mailing_list in mailing_lists:
                 mailing_list.customers.add(customer)
-            print(f"Customer {customer.display_name} added to mailing lists: {[ml.name for ml in mailing_lists]}")
 
         else:
             # Remove the customer from mailing lists if they are inactive or no longer have a valid mailing address
             mailing_lists = CustomerMailingList.objects.filter(customers=customer).distinct()
             for mailing_list in mailing_lists:
                 mailing_list.customers.remove(customer)
-            print(f"Customer {customer.display_name} removed from mailing lists: {[ml.name for ml in mailing_lists]}")

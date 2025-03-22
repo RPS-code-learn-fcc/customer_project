@@ -145,10 +145,8 @@ class CustomerInterest(models.Model):
         otherwise returns the default star image URL from settings.
         """
         if self.icon_image:  # Check if the icon_image exists
-            print(self.icon_image, "icon image is provided")
             return self.icon_image.url  # Return the URL of the associated icon
         else:
-            print(settings.DEFAULT_STAR_IMAGE_URL, "default image")
             # Return the default star image URL from settings
             return settings.DEFAULT_STAR_IMAGE_URL
 

@@ -5,27 +5,43 @@
 {% if request.user.is_authenticated %}
 
 <!-- Custom html tag for main content area -->
-<div x-data="{ mobileSidebarOpen: false }" class="grid grid-cols-3 max-w-[80%] mx-auto my-6 px-6">
-    <!-- Styles the -->
-    <mobileSidebarNav class="lg:hidden col-span-full mx-auto mb-6 z-10 relative">
-        <a @click="mobileSidebarOpen = !mobileSidebarOpen" class="flex items-center cursor-pointer select-none font-bold hover:bg-gray-200 rounded-lg p-3">
-            <span>Interests</span>
-            <img x-bind:class="mobileSidebarOpen && 'rotate-180 duration-300'" class="w-4 ml-1.5" src="https://img.icons8.com/small/32/000000/expand-arrow.png" />
-        </a>
-    </mobileSidebarNav>
-    
-    <!-- Defines the main content area block -->
-    <main class="col-span-full md:col-span-2 md:mr-[5%] lg:mx-[10%] order-2 md:order-1 border border-gray-300 mx-auto my-2 flex justify-center items-center">
+<div style="display: grid; grid-template-columns: 2fr 1fr; max-width: 70%; margin: 0 auto; padding: 1.5rem; gap: 1.5rem;">
+    <!-- Main Content Area -->
+    <main style="grid-column: 1; border: 1px solid #e5e7eb; padding: 1rem;">
         {% block content %}
         {% endblock %}
     </main>
     
-    <!-- Renders the sidebar -->
-    {% include 'includes/sidebar.html' %}
-
+    <!-- Sidebar -->
+    <aside style="grid-column: 2; border: 1px solid #e5e7eb; padding: 1rem;">
+        {% include 'includes/sidebar.html' %}
+    </aside>
 </div>
 
-{% endif %}
+<style>
+    /* Responsive Styles */
+    @media (min-width: 768px) {
+        div {
+            grid-template-columns: 2fr 1fr; /* Two columns: main content (2fr) and sidebar (1fr) */
+        }
 
+        main {
+            grid-column: 1; /* Main content spans the first column */
+        }
+
+        aside {
+            display: block; /* Show the sidebar */
+            grid-column: 2; /* Sidebar spans the second column */
+        }
+    }
+
+    @media (min-width: 1024px) {
+        main {
+            margin-right: 5%; /* Add right margin to main content */
+        }
+    }
+</style>
+
+{% endif %}
 
 {% endblock %}

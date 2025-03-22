@@ -216,7 +216,7 @@ def home_view(request, interests=None):
         customers = paginator.page(page)
     except (EmptyPage, PageNotAnInteger):
         # an empty page is returned if there are no more customer entries
-        return HttpResponse('<div style="text-align: center; font-weight: bold; margin-top: 20px;">No customers with matching criteria found.</div>')
+        return HttpResponse('<div style="text-align: center; font-weight: bold; margin-top: 20px;">No more customers with matching criteria found.</div>')
     email_prefix = request.user.short_name()
     
     # Prepare context

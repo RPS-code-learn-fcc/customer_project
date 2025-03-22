@@ -38,7 +38,6 @@ from django.conf.urls.static import static
 from django.shortcuts import redirect
 from django.views.generic.base import RedirectView
 
-
 urlpatterns = [
     path('admin/', include('admin_honeypot.urls', namespace='admin_honeypot')),
     path('customadmin/', admin.site.urls),
@@ -53,6 +52,10 @@ urlpatterns = [
     # include other app urls
     path('customers/', include('customers.urls')),
     path('profile/', include('app_users.urls')),
+    
+    # Redirect root URL (http://127.0.0.1:8000/) to customers/
+    path('', RedirectView.as_view(url='/customers/', permanent=True)),
+    
 ]
 
 

@@ -115,7 +115,7 @@ class HomeViewTests(TestCase):
 
         response = self.client.get(reverse("home"))
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "No customers with matching criteria found.")
+        self.assertContains(response, "No more customers with matching criteria found.")
 
     def test_home_view_context_data(self):
         """

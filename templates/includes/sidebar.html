@@ -2,11 +2,7 @@
 <!-- Styling of the sidebar-->
 <!-- This element is part of an Alpine.js-powered sidebar, appearing when mobileSidebarOpen is true. 
     It includes conditional rendering and responsive layout adjustments depending on screen size and transistion styling for when it appears on the page-->
-<aside x-show="mobileSidebarOpen" x-cloak 
-    class="lg:!block col-span-full md:col-span-1 lg:mr-[30%] lg:ml-[10%] order-1 md:order-2"
-    x-transition:enter="duration-500 ease-in-out" 
-    x-transition:enter-start="opacity-0 -translate-y-32"
-    x-transition:enter-end="opacity-100 translate-y-0">
+<aside>
     
     <!-- Filter by Date Added section: only filters the 'search by customer' on the home page -->  
     <!-- HTMX: A JS library that extends HTML to enable declarative, client-side interactions with server-side resources, 

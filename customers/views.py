@@ -37,6 +37,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib.units import inch
 from reportlab.pdfgen import canvas  
 
+
 # --------------------------- PROJECT LAYOUT VIEWS USING DIGRAPHS / GRAPHVIZ ----------------------------
 @login_required    
 def architecture_diagram_view(request):
@@ -1113,13 +1114,12 @@ def add_document(request, customer_id):
 def add_interest(request):  
     """Add a new interest view"""
     if request.method == 'POST':  
-        form = CreateCustomerInterest(request.POST)  
-        # if the form is valid
+        form = CreateCustomerInterest(request.POST, request.FILES)  # Add request.FILES here
         if form.is_valid():  
             interest = form.save(commit=False)  
-            interest.slug = slugify(interest.name)  # creates a URL-friendly "slug" from the name field of the interest object -- assigns it to the slug field
+            interest.slug = slugify(interest.name)  # Create a URL-friendly slug
             interest.save()  
-        return redirect('home')  
+            return redirect('home')  
     else:  
         form = CreateCustomerInterest()  
     return render(request, 'customers/add_interest.html', {'form': form})

@@ -44,11 +44,11 @@
           <div class="flex flex-wrap gap-2 my-4 bg-gray-100 p-4 rounded">  
             {% for interest in customer.interests.all %}  
               <a href="{% url 'interest' interest.slug %}" class="bg-gray-500 rounded-lg px-3 py-1 hover:bg-gray-400 flex items-center">
-                <img src="{{ interest.icon_image_url }}" class="mr-2">
-                <!-- Show the interest name, only if it is not the default star-->
-                {% if interest.icon_image_url == '/static/images/star.svg' %}
-                  <span class="font-bold text-sm">{{ interest.name }}</span>
-                {% endif %}
+                <!-- Will have a different default icon_image_url depending if it is in production or development -->
+                <img src="{{ interest.icon_image_url }}" alt="{{ interest.name }}" class="mr-2">
+                <span class="font-bold text-sm">{{ interest.name }}</span>
+                <span class="font-bold text-sm">{{ interest.icon_image_url }}</span>
+
               </a>
             {% endfor %}  
           </div>  

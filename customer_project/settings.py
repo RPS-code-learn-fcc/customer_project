@@ -197,10 +197,16 @@ if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # checks where postg
                 "raw": { "BACKEND": "cloudinary_storage.storage.RawMediaCloudinaryStorage",  # For raw files (PDFs, etc.)
                 }, 
                 }
-    
+    # star image as default icon image in production: 
+    DEFAULT_STAR_IMAGE_URL = 'https://res.cloudinary.com/dpkgbnvpn/image/upload/v1742652078/star_n9ay5w.svg'
+
 
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path - in storage
+    # star image as default icon image in development: 
+    DEFAULT_STAR_IMAGE_URL = '/static/images/star.svg'
+
+
 
 # ---- ADD the following to integrate with Django allauth ------
 ACCOUNT_USERNAME_REQUIRED = False

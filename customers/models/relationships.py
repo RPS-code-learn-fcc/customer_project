@@ -7,7 +7,8 @@ from django.utils import timezone
 from django.core.validators import RegexValidator, MinLengthValidator, MaxLengthValidator
 
 # provides an interface to access static files & file storage paths
-from django.contrib.staticfiles.storage import staticfiles_storage
+from django.conf import settings
+from django.core.files.storage import default_storage
 
 
 def validate_file_type(value):
@@ -139,12 +140,17 @@ class CustomerInterest(models.Model):
         
     @property
     def icon_image_url(self):
-        """Returns the URL of the associated profile image - if it exists - OR a default profile image"""
-        try:
-            icon_image = self.icon_image.url # URL of the associated icon
-        except ValueError:  # ValueError Raised if `image` is None or invalid
-            return staticfiles_storage.url('images/star.svg') # gets default icon
-        return icon_image
+        """
+        Returns the URL of the associated icon image if it exists,
+        otherwise returns the default star image URL from settings.
+        """
+        if self.icon_image:  # Check if the icon_image exists
+            print(self.icon_image, "icon image is provided")
+            return self.icon_image.url  # Return the URL of the associated icon
+        else:
+            print(settings.DEFAULT_STAR_IMAGE_URL, "default image")
+            # Return the default star image URL from settings
+            return settings.DEFAULT_STAR_IMAGE_URL
 
 class CustomerMailingList(models.Model):
     """Creates a mailing list based on interests"""

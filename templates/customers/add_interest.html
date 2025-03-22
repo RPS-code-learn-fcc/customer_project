@@ -8,7 +8,7 @@
 {% block content %}
 <div class="p-5">
     <h1>Add an Interest:</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         <!-- CSRF Token (required for all forms) -->
         {% csrf_token %}
 

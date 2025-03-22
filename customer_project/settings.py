@@ -125,7 +125,7 @@ DATABASES = {
     }
 }
 # POSTGRES_LOCALLY = False (PostgreSQL is being used remotely), POSTGRES_LOCCALLY = True (local use of PostgreSQL)
-POSTGRES_LOCALLY = False
+POSTGRES_LOCALLY = True
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # if the production value is set -> it is using render.com, else it is using postgreSQL locally, else it is using sql lite in production
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 
@@ -192,7 +192,12 @@ CLOUDINARY_STORAGE = {
 }
 
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # checks where postgres is running (locally or through render.com, else it uses the development
-    STORAGES = { "default": { "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", }, "staticfiles": { "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage", }, }
+    STORAGES = { "default": { "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage", }, 
+                "staticfiles": { "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage", },  # for images       
+                "raw": { "BACKEND": "cloudinary_storage.storage.RawMediaCloudinaryStorage",  # For raw files (PDFs, etc.)
+                }, 
+                }
+    
 
 else:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Directory where uploaded files are stored - absolute filesystem path - in storage

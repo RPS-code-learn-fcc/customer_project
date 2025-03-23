@@ -1702,10 +1702,17 @@ def generate_labels_pdf(request, mailing_list_id):
         if address.customer_addresses.exists()  # Ensure the address is linked to at least one customer
     ]
 
-    # Get the starting position from the form (converted to zero-based index)
-    start_position = int(request.POST.get('start_position', 1)) - 1
+     # get starting position of grid (default to 0 if the user does not click anything on the screen)
+    start_position_str = request.POST.get('start_position', '1')  
+    try:
+        start_position = int(start_position_str) - 1  # Convert to zero-based index
+    except ValueError:
+        start_position = 0  # Default to 0 if it fails - empty string provided, etc. 
 
-    # Create PDF response
+    if start_position < 0:  # make sure the start position is not negative
+        start_position = 0
+
+    # PDF response
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="{mailing_list.name}_mailing_list.pdf"'
 

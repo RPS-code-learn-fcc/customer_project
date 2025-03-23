@@ -39,9 +39,7 @@ class HomeViewTests(TestCase):
         """
         Test that the home view renders the correct template for a standard GET request.
         """
-        print(self.user)
         response = self.client.get(reverse("home"))
-        print(response)
         self.assertEqual(response.status_code, 200)
         #self.assertTemplateUsed(response, "customers/home.html")
         

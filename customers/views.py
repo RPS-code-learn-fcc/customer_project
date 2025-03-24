@@ -1149,25 +1149,18 @@ def create_customer_mailing_list(request):
         selected_address_ids = request.POST.get("selected_addresses", "").split(",")
         selected_address_ids = [int(id) for id in selected_address_ids if id.strip().isdigit()]
 
-        print("Selected Address IDs:", selected_address_ids)
-
         if form.is_valid():
             # Save the mailing list instance first
-            mailing_list = form.save(commit=False)  # Create the object but don't save M2M fields yet
-            mailing_list.save()  # Now it has an ID!
+            mailing_list = form.save(commit=False) 
+            mailing_list.save()  
 
-            # Save ManyToMany relationships (Interests)
-            form.save_m2m()  
-
-            # Fetch the selected Address objects
+            # Get the selected Address objects
             selected_addresses = Address.objects.filter(id__in=selected_address_ids)
-            print("Selected Addresses:", selected_addresses)
 
-            # Get Customers Associated with the Selected Addresses
+            # Get customers
             customers = Customer.objects.filter(addresses__in=selected_addresses).distinct()
-            print("Customers Added to Mailing List:", customers)
 
-            # Add Customers to the Mailing List
+            # Add Customers & selected addresses to the Mailing List
             mailing_list.customers.add(*customers)  
             mailing_list.addresses.add(*selected_addresses)  
 
@@ -1675,13 +1668,6 @@ def remove_customer_address_from_mailing_list(request, mailing_list_id, customer
     customer = get_object_or_404(Customer, id=customer_id)
     address = get_object_or_404(Address, id=address_id)
 
-    # Debugging prints
-    print(mailing_list.customers.all(), " before")
-    print(mailing_list.addresses.all(), " before")
-    print(mailing_list, "mailing_list")
-    print(customer, "customer")
-    print(address, "address")
-
     # Remove the address from the mailing list
     mailing_list.addresses.remove(address)
 
@@ -1707,7 +1693,7 @@ def generate_labels_pdf(request, mailing_list_id):
 
     # Generate formatted addresses with the first associated customer's name and address
     formatted_addresses = [
-        f"{address.customer_addresses.first().display_name}\n{address.street}\n{address.city}, {address.state} {address.zip_code}"
+        f"{address.customer_addresses.first().mailing_list_name}\n{address.street}\n{address.city}, {address.state} {address.zip_code}"
         for address in mailing_list.addresses.all()
         if address.customer_addresses.exists()  # Ensure the address is linked to at least one customer
     ]

@@ -99,6 +99,16 @@ class Customer(models.Model):
             return f"{self.first_name} ({self.customer_type})" 
         
     @property  
+    def mailing_list_name(self):  
+        """  
+         Returns the mailing list name for the customer based on their customer type.  
+        """  
+        if self.customer_type == "person":  
+            return f"{self.first_name} {self.last_name}".strip()  
+        else:  
+            return f"{self.first_name}" 
+        
+    @property  
     def preferred_contact_methods_display(self):  
         """  
             Returns a string representation of the customer's preferred contact methods.  

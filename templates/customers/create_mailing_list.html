@@ -20,7 +20,7 @@
     <form method="post" action="{% url 'create-customer-mailing-list' %}">
         {% csrf_token %}
         
-        <!-- Message if no addresses or interests are selected -->
+        <!-- Non-field errors -->
         <div class="nonfield-errors text-center">
             {% if form.non_field_errors %}
                 <ul class="errorlist">
@@ -32,13 +32,15 @@
         </div>
 
         <!-- Message if no addresses or interests are selected -->
-        <div class="nonfield-errors text-center">
-            <ul class="errorlist">
-                <li>
-                    {{ msg }}
-                </li>
-            </ul>
-        </div>
+        {% if msg %}
+            <div class="nonfield-errors text-center">
+                <ul class="errorlist">
+                    <li>
+                        {{ msg }}
+                    </li>
+                </ul>
+            </div>
+        {% endif %}
 
         <!-- Name Field -->
         <div class="form-group" style="margin-bottom: 1.5rem;">

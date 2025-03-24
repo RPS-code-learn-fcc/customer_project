@@ -25,7 +25,7 @@ def update_customers_and_addresses(sender, instance, action, **kwargs):
             mailing_address=True
         ).distinct()
 
-        # Ensure only customers who have at least one valid mailing address are included
+        # makes sure only customers who have at least one valid mailing address are included
         valid_customers = customers.filter(
             addresses__in=addresses,
             is_inactive=False
@@ -49,27 +49,31 @@ def update_customer_mailing_lists(sender, instance, action, reverse, model, pk_s
         mailing_lists = CustomerMailingList.objects.filter(interests__in=instance.interests.all()).distinct()
         
         for mailing_list in mailing_lists:
-            # Ensure the customer is active and has at least one valid mailing address
+            # makes sure the customer is active and has at least one valid mailing address
             if not instance.is_inactive and instance.addresses.filter(mailing_address=True).exists():
                 mailing_list.customers.add(instance)
 
     elif action == "post_remove":
-        # When interests are removed, check if the customer still belongs to any relevant mailing list
+        #customer interes is removed - see if the customer is still part of the mailing list
         mailing_lists = CustomerMailingList.objects.filter(interests__in=pk_set).distinct()
 
         for mailing_list in mailing_lists:
-            # If the customer no longer has any interests in this mailing list, remove them
+            # see if customer has any interests in list
             remaining_interests = mailing_list.interests.filter(customer_interests=instance)
 
-            # Also ensure the customer is active and has a valid mailing address
-            if not remaining_interests.exists() or instance.is_inactive or not instance.addresses.filter(mailing_address=True).exists():
+            # if customer has no interests that are in the list - remove them
+            if not remaining_interests.exists():
                 mailing_list.customers.remove(instance)
+
+                # also remove all customer addresses with the list
+                customer_addresses = instance.addresses.all()
+                mailing_list.addresses.remove(*customer_addresses)
                 
 @receiver(post_save, sender=Address)
 def update_mailing_list_on_address_change(sender, instance, **kwargs):
     """
     Updates mailing lists when an address is added, modified, or removed.
-    Ensures only active customers with at least one valid mailing address are included.
+    makes sures only active customers with at least one valid mailing address are included.
     """
     CustomerMailingList = apps.get_model('customers', 'CustomerMailingList')
 

@@ -1190,10 +1190,11 @@ def interest_customer_count(request):
     if not selected_interest_ids:
         return JsonResponse({'total_customers': 0})
 
-    # retrieve any customers who have any of the selected interests and
+    # retrieve any customers who have any of the selected interests and are active
     customers = Customer.objects.filter(
-        interests__id__in=selected_interest_ids,  # Match selected interests
-        addresses__mailing_address=True  # Ensure at least one address has mailing_address=True
+        interests__id__in=selected_interest_ids, 
+        addresses__mailing_address=True,
+        is_inactive = False
     ).distinct()
     return JsonResponse({'total_customers': customers.count()})
 

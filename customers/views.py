@@ -1419,7 +1419,7 @@ def document_edit_view(request, customer_id, document_pk):
 
 @login_required
 def mailing_list_edit_view(request, pk):
-    """View to edit a mailing list given the primary key (id)."""
+    """Edits a mailing list - based on provided primary key. Can only remove addresses"""
     # Retrieve the correct mailing list
     mailing_list = get_object_or_404(CustomerMailingList, pk=pk)
 
@@ -1429,33 +1429,38 @@ def mailing_list_edit_view(request, pk):
     )
 
     if request.method == "POST":
-        form = CreateCustomerMailingListForm(request.POST, instance=mailing_list)  
+        form = CreateCustomerMailingListForm(request.POST, instance=mailing_list)
 
         if form.is_valid():
             mailing_list = form.save(commit=False)  # Save the form data, but don't commit yet
             mailing_list.save()  # Save the mailing list instance
 
-            # Save ManyToMany relationships (Interests)
-            form.save_m2m()
-
-            # Retrieve manually selected addresses from form input
+            # retrieve manually selected addresses from form input
             selected_address_ids = request.POST.get("selected_addresses", "").split(",")
             selected_address_ids = [int(id) for id in selected_address_ids if id.strip().isdigit()]
 
-            #Fetch the selected Address objects**
+            # Get the selected Address objects
             selected_addresses = Address.objects.filter(id__in=selected_address_ids)
 
-            # Get customers associated with the selected addresses**
-            customers = Customer.objects.filter(addresses__in=selected_addresses).distinct()
+            # Get the current addresses in the mailing list
+            current_addresses = mailing_list.addresses.all()
 
-            # Update mailing list data (prevents duplicates)**
-            mailing_list.addresses.set(selected_addresses)  # Update mailing list addresses
-            mailing_list.customers.set(customers)  # Update mailing list customers
+            # Combine the selected addresses with the current addresses
+            updated_addresses = set(current_addresses).intersection(selected_addresses)
+
+            # Update mailing list addresses (only the selected addresses)
+            mailing_list.addresses.set(updated_addresses)
+
+            # Get customers associated with the updated addresses
+            customers = Customer.objects.filter(addresses__in=updated_addresses).distinct()
+
+            # Update mailing list customers (only customers associated with the updated addresses)
+            mailing_list.customers.set(customers)
 
             return redirect('view-mailing-list-details', mailing_list.id)  # Redirect to view the updated mailing list
 
     else:
-        form = CreateCustomerMailingListForm(instance=mailing_list)  
+        form = CreateCustomerMailingListForm(instance=mailing_list)
 
     context = {
         'mailing_list': mailing_list,
@@ -1463,6 +1468,10 @@ def mailing_list_edit_view(request, pk):
         'selected_interest_ids': selected_interest_ids,  # Pass selected interests to template
     }
     return render(request, 'customers/mailing_list_edit.html', context)
+
+
+
+
 # ------------------------------- ADDITIONAL document AND Note views --------------------
 @login_required
 def note_detail_view(request, customer_id, note_pk):

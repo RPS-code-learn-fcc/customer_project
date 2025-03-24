@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from customers.models import ContactMethod
 
 class Command(BaseCommand):
-    help = "Seeds the database with preferred contact methods."
+    help = "Seeds the database with 5 preferred contact methods."
 
     def handle(self, *args, **options):
         self.stdout.write("Seeding Customer contact methods...")

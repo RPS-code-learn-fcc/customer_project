@@ -167,6 +167,14 @@ class CustomerMailingList(models.Model):
     class Meta: 
         ordering = ['-created_at']
     
+    @property
+    def customer_count(self):
+        """
+        Returns the number of customers in this mailing list
+        """
+        return self.customers.count()
+
+    
 class CustomerNoteHistory(models.Model):
     """Stores the edit history of CustomerNotes"""
     customer_note = models.ForeignKey(CustomerNote, on_delete=models.SET_NULL, related_name="note_history", null=True)

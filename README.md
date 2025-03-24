@@ -52,7 +52,7 @@ Can also filter home feed of customer information based on:
 
 ## Django Management Commands
 
-To seed data into the app, run the following django management commands:
+To seed (fake - using Faker) data into the app, run the following django management commands:
 
 1. python manage.py app_users_seed_data
 2. python manage.py customer_contact_methods_seed_data

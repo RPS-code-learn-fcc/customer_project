@@ -52,6 +52,11 @@ def update_customer_mailing_lists(sender, instance, action, reverse, model, pk_s
             # makes sure the customer is active and has at least one valid mailing address
             if not instance.is_inactive and instance.addresses.filter(mailing_address=True).exists():
                 mailing_list.customers.add(instance)
+                # Get all mailing addresses for this customer
+                mailing_addresses = instance.addresses.filter(mailing_address=True)
+                
+                # Add all mailing addresses to the mailing list
+                mailing_list.addresses.add(*mailing_addresses)
 
     elif action == "post_remove":
         #customer interes is removed - see if the customer is still part of the mailing list

@@ -198,6 +198,8 @@ class Command(BaseCommand):
                 # rename the file in a way that is consisent with the custom save method in the name
                 file_name = f"{customer.display_name}_{file_type}_{timezone.now().year}.pdf"
 
+                # keep the length within the character limits:
+                file_name = file_name[:100]
                 # Open the template PDF file
                 with open(template_pdf_path, "rb") as f:
                     # create a new document

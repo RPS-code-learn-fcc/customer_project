@@ -20,13 +20,24 @@
     <form method="post" action="{% url 'create-customer-mailing-list' %}">
         {% csrf_token %}
         
-        <!-- Non-field Errors -->
-        <div class="nonfield-erros">
-        {% if form.non_field_errors %}
-            <div class="errorlist">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
+        <!-- Message if no addresses or interests are selected -->
+        <div class="nonfield-errors text-center">
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+
+        <!-- Message if no addresses or interests are selected -->
+        <div class="nonfield-errors text-center">
+            <ul class="errorlist">
+                <li>
+                    {{ msg }}
+                </li>
+            </ul>
         </div>
 
         <!-- Name Field -->
@@ -90,29 +101,30 @@
         <!-- Hidden input to store selected addresses -->
         <input type="hidden" id="hidden-addresses" name="selected_addresses">
 
-            <!-- Interests Selection -->
+        <!-- Interests Selection -->
         <div class="m-4 p-4 border border-gray-300 rounded-lg min-h-[100px] bg-white shadow-sm text-center">
             <h3 class="text-xl pt-2 font-semibold mb-4">Select Interests</h3>
 
             <!-- HTMX Target for Updating Total -->
             <div id="interest-totals" class="text-lg font-medium text-gray-700">Adding 0 Customers</div>
             
+            <!-- Hidden input to store selected interests -->
+            <input type="hidden" id="hidden-interests" name="selected_interests">
+
             <div class="checkbox-buttons mt-2">
-                    <!-- Select All Interests Button -->
-                    <button type="button" id="select-all-interests"
-                    class="mt-3 py-2 px-4 rounded-lg transition">
+                <!-- Select All Interests Button -->
+                <button type="button" id="select-all-interests" class="mt-3 py-2 px-4 rounded-lg transition">
                     Select All Interests
                 </button>
                 {% for field in form %}
                     {% if field.field.widget.input_type == 'checkbox' %}
                         <div class="inline-block">
-                            <!-- Keep input separate from label to apply styles properly -->
                             {{ field }}
-                            
                         </div>
                     {% endif %}
                 {% endfor %}
             </div>
+        </div>
 
         <!-- Save Button / Submit Form-->
         <div class="flex justify-center my-4">
@@ -131,80 +143,57 @@
 {% endblock %}
 {% block script %}
 <script>
-    document.querySelector("form").addEventListener("submit", function() {
-        let hiddenField = document.getElementById("hidden-addresses");
+   // Retrieves all values of checked interests
+function getSelectedInterests() {
+    let selectedInterests = [];
+    document.querySelectorAll("input[type='checkbox']:checked").forEach(checkbox => {
+        selectedInterests.push(checkbox.value);
     });
+    return selectedInterests;
+}
 
-    document.addEventListener("DOMContentLoaded", function() {
-        let selectedAddresses = document.getElementById("selected-addresses");
-        let noAddressesMessage = document.getElementById("no-addresses");
+// Updates the hidden input field with selected interests
+function updateHiddenInterests() {
+    let selectedInterests = getSelectedInterests();
+    document.getElementById("hidden-interests").value = selectedInterests.join(",");
+}
 
-        // Observer for changes in the selected addresses list
-        const observer = new MutationObserver(() => {
-            noAddressesMessage.style.display = selectedAddresses.children.length > 0 ? "none" : "block";
-        });
+// Adds event listener to checkboxes for updating interest counts and hidden input
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll(".checkbox-buttons input[type='checkbox']").forEach(checkbox => {
+        checkbox.addEventListener("change", function () {
+            updateHiddenInterests(); // Update hidden input
+            let selectedInterests = getSelectedInterests();
 
-        observer.observe(selectedAddresses, { childList: true });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-        let addressResults = document.getElementById("address-results");
-        let searchPlaceholder = document.getElementById("search-placeholder");
-
-        // Observer for changes in the search results list
-        const observer = new MutationObserver(() => {
-            searchPlaceholder.style.display = addressResults.children.length > 0 ? "none" : "block";
-        });
-
-        observer.observe(addressResults, { childList: true });
-    });
-
-    // Retrieves all values of checked interests
-    function getSelectedInterests() {
-        let selectedInterests = [];
-        document.querySelectorAll("input[type='checkbox']:checked").forEach(checkbox => {
-            selectedInterests.push(checkbox.value);
-        });
-        return selectedInterests;
-    }
-
-    // Adds event listener to checkboxes for updating interest counts
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".checkbox-buttons input[type='checkbox']").forEach(checkbox => {
-            checkbox.addEventListener("change", function () {
-                let selectedInterests = getSelectedInterests();
-
-                fetch("{% url 'interest-customer-count' %}?selected_interests=" + selectedInterests.join(","), {
-                    method: "GET",
-                    headers: { "X-Requested-With": "XMLHttpRequest" }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById("interest-totals").textContent = `Adding ${data.total_customers} Customers`;
-                })
-                .catch(error => console.error("Error fetching customer count:", error));
-            });
+            fetch("{% url 'interest-customer-count' %}?selected_interests=" + selectedInterests.join(","), {
+                method: "GET",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("interest-totals").textContent = `Adding ${data.total_customers} Customers`;
+            })
+            .catch(error => console.error("Error fetching customer count:", error));
         });
     });
 
     // Adds event listener to the "Select All Interests" button
-    document.addEventListener("DOMContentLoaded", function () {
-        const selectAllButton = document.getElementById("select-all-interests");
-        const checkboxes = document.querySelectorAll(".checkbox-buttons input[type='checkbox']");
+    const selectAllButton = document.getElementById("select-all-interests");
+    const checkboxes = document.querySelectorAll(".checkbox-buttons input[type='checkbox']");
 
-        selectAllButton.addEventListener("click", function () {
-            let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
+    selectAllButton.addEventListener("click", function () {
+        let allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
-            checkboxes.forEach(checkbox => {
-                checkbox.checked = !allChecked;  // Toggle state
-                checkbox.dispatchEvent(new Event("change"));  // Trigger change event
-            });
-
-            // Update button text and styles
-            selectAllButton.textContent = allChecked ? "Select All Interests" : "Deselect All Interests";
-            selectAllButton.classList.toggle("selected", !allChecked);
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = !allChecked;  // Toggle state
+            checkbox.dispatchEvent(new Event("change"));  // Trigger change event
         });
+
+        // Update button text and styles
+        selectAllButton.textContent = allChecked ? "Select All Interests" : "Deselect All Interests";
+        selectAllButton.classList.toggle("selected", !allChecked);
     });
+});
 </script>
 
 {% endblock %}

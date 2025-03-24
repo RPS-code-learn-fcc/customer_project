@@ -1140,31 +1140,62 @@ def add_contact_method(request):
 # --------------------------- MAILING LIST CREATION ----------------------------
 @login_required
 def create_customer_mailing_list(request):
-    """View to create a customer mailing list"""
-    
+    """Creates a customer mailing list"""
+    # if it is a post request
     if request.method == 'POST':
         form = CreateCustomerMailingListForm(request.POST)
-
-        # Get the selected address IDs from the request
+        # creating a mailng list - can get the ids of the addressess manually added OR the ids of the selected addresses
+        # From request - get selected address 
         selected_address_ids = request.POST.get("selected_addresses", "").split(",")
         selected_address_ids = [int(id) for id in selected_address_ids if id.strip().isdigit()]
+        
+        # From request - selected interest IDs 
+        selected_interest_ids = request.POST.get("selected_interests", "").split(",")
+        selected_interest_ids = [int(id) for id in selected_interest_ids if id.strip().isdigit()]
+        
+        
 
+        # if both selected_interest_ids and selected_address_ids are empty stings send an error message to the form & render it 
+        if not selected_address_ids and not selected_interest_ids:
+            msg = "You must add at least one address / customer or select at least interest to create a mailing list."
+            return render(request, 'customers/create_mailing_list.html', {'form': form, 'msg':msg})
+
+        # if the form data submitted is valie
         if form.is_valid():
-            # Save the mailing list instance first
+            # save new instance of mailing list
             mailing_list = form.save(commit=False) 
             mailing_list.save()  
 
-            # Get the selected Address objects
+            # use ids passed in request to get Address instances
             selected_addresses = Address.objects.filter(id__in=selected_address_ids)
 
-            # Get customers
-            customers = Customer.objects.filter(addresses__in=selected_addresses).distinct()
+            # also get cusotmers from seleected addresses
+            customers_from_addresses = Customer.objects.filter(addresses__in=selected_addresses).distinct()
 
-            # Add Customers & selected addresses to the Mailing List
-            mailing_list.customers.add(*customers)  
+            # Filter all active customers based on interes or addressess provided
+            customers_from_interests = Customer.objects.filter(
+                interests__id__in=selected_interest_ids, 
+                addresses__mailing_address=True,
+                is_inactive=False
+            ).distinct()
+            # 💡 Derive all address from the selected interests
+            interest_addresses = Address.objects.filter(
+                customer_addresses__in=customers_from_interests,
+                mailing_address=True
+            ).distinct()
+
+            # Create a combine query of customers from addresses and instances
+            all_customers = customers_from_addresses | customers_from_interests
+            
+            selected_interests = CustomerInterest.objects.filter(id__in=selected_interest_ids)
+
+            # add all selected user data to the mailing list
+            mailing_list.customers.add(*all_customers)  
             mailing_list.addresses.add(*selected_addresses)  
-
-
+            mailing_list.addresses.add(*interest_addresses)  
+            mailing_list.interests.add(*selected_interests)
+            
+            # redirect to show all mailing lists
             return redirect('list-mailing-lists')
     else:
         form = CreateCustomerMailingListForm()
@@ -1178,7 +1209,7 @@ def interest_customer_count(request):
     # Fix extraction: split by commas if single string, otherwise get a list of ids
     selected_interests_raw = request.GET.get('selected_interests', '')  # Get as a string
     selected_interest_ids = selected_interests_raw.split(",") if selected_interests_raw else []
-
+    print(selected_interest_ids, "selected ids")
     # if no customers are selected
     if not selected_interest_ids:
         return JsonResponse({'total_customers': 0})

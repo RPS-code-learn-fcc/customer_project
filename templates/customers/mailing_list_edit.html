@@ -2,15 +2,14 @@
 {% extends 'layouts/ContainerLayoutWhite.html' %}
 
 <!-- Update the Title of the page -->
-{% block title %}Create a New Mailing List{% endblock %}
+{% block title %}Edit Mailing List{% endblock %}
 
 <!-- Insert Content here -->
 {% block content %}
 <div class="p-5">
-    <h1 class="text-center">Create a New Mailing List</h1>
+    <h1 class="text-center">Edit Mailing List: {{mailing_list}} </h1>
     <p class="text-center text-gray-500">
-        Create a mailing list by manually adding customers or addresses OR selecting an interest to include all related customers. 
-        You can combine both methods—each customer and address will be added only once.
+        Remove mailing addresses from {{mailing_list}}.
     </p>
 
     <!-- Mailing List Container -->
@@ -19,13 +18,15 @@
     <!-- Encapsulates all mailing list information in a form -->
     <form method="post" action="{% url 'edit-mailing-list' mailing_list.id %}">
         {% csrf_token %}
-        <!-- Non-field Errors -->
-        <div class="nonfield-erros">
-        {% if form.non_field_errors %}
-            <div class="errorlist">
-                {{ form.non_field_errors }}
-            </div>
-        {% endif %}
+        <!-- Message if no addresses or interests are selected -->
+        <div class="nonfield-errors text-center">
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
         </div>
 
         <!-- Name Field -->

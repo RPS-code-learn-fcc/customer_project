@@ -576,7 +576,6 @@ def search_customers_mailing_list(request):
     return render(request, 'customers/partials/list_customers_mailing.html', context)  # Ensure this template exists
 
 # --------------------------- CUSTOMER SIGN-UP PROCESS: Creation of new customer ----------------------------
-
 # define all forms to be used in the multi-step sign-up process - in the order they will be used
 FORM_CLASSES = [
     CreateCustomerForm,
@@ -802,87 +801,6 @@ def cancel_confirmation(request):
         View that is shown to the user when the multi-step customer signup process is cancelled
     """
     return render(request, 'customers/signup_cancel_confirmation.html')
-
-@login_required
-def create_customer_back_step(request):
-    """
-        Handles navigating back one step in the multi-step customer signup process.
-
-        This view allows users to go back to the previous step in the form flow.
-        - Updates the session variable (`signup_step`) to the previous step.
-        - Retrieves the corresponding form class for the updated step.
-        - Prefills the form with previously submitted data (if applicable).
-        - If the form corresponds to a related model (e.g., addresses, phones, emails), 
-        it retrieves the latest instance.
-        - Returns the updated form as an HTMX partial or redirects to the main signup view.
-
-        Returns:
-            - A rendered form for HTMX requests.
-            - A redirect to the main signup view if HTMX is not used.
-    """
-
-    # Retrieve the current step from session
-    step = request.session.get('signup_step', 0)
-
-    # Ensure the step does not go below zero
-    if step > 0:
-        step -= 1
-    request.session['signup_step'] = step  # Save the updated step in session
-
-    # Retrieve the form class for the current step
-    FormClass = FORM_CLASSES[step]
-
-    # Retrieve previously submitted data
-    if step == 0:
-        # First step: Attempt to prefill customer data if available
-        customer_id = request.session.get('customer_id')
-        if customer_id:
-            customer = get_object_or_404(Customer, id=customer_id)
-            form = FormClass(instance=customer)
-        else:
-            form = FormClass()  # Provide a blank form if no customer exists yet
-    else:
-        # Retrieve existing customer data for later steps
-        customer_id = request.session.get('customer_id')
-        if not customer_id:
-            return redirect("sign_up_error")  # Redirect if no customer data is found
-
-        customer = get_object_or_404(Customer, id=customer_id)
-
-        # Determine the instance for the specific form type (addresses, phones, emails, etc.)
-        if FormClass == CreateAddressForm:
-            instance = customer.addresses.last()
-        elif FormClass == CreatePhoneForm:
-            instance = customer.phones.last()
-        elif FormClass == CreateEmailForm:
-            instance = customer.emails.last()
-        elif FormClass == CreateDocumentForm:
-            try:
-                instance = customer.documents.get()  # Retrieve single document if it exists
-            except CustomerDocument.DoesNotExist:
-                instance = None
-        elif FormClass == CreateNoteForm:
-            instance = customer.notes.last()
-        else:
-            instance = None  # Default case for unknown form types
-
-        form = FormClass(instance=instance)  # Populate form with the retrieved instance
-
-    # If the request is an HTMX request, render the form as a partial
-    if request.htmx:
-        return render(
-            request,
-            "customers/partials/signup_form.html",
-            {
-                "form": form,
-                "step": step + 1,  # Display step index starting from 1
-                "total_steps": len(FORM_CLASSES),
-            },
-        )
-
-    # If not an HTMX request, redirect to the full signup view
-    return redirect("create_customer_view")
-
 
 @login_required
 def create_customer_skip_step(request):

@@ -16,6 +16,7 @@
         
         <!-- For sercurity purposes -->
         {% csrf_token %}
+        
 
         <!-- Display non-field errors -->
         {% if form_errors %}
@@ -55,16 +56,10 @@
                 Next
             </button>
             
-            <!-- Can only go back if there is a step to go back to-->
+            <!-- Can only skip after the first step-->
             {% if step > 1 %}
-                <!-- Back Button to go back a step -->
-                <a href="{% url 'back_step' %}" 
-                   hx-get="{% url 'back_step' %}" 
-                   hx-target="#signup-container"
-                   class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition duration-300">
-                    Back
-                </a>
-        
+              
+    
                 <!-- Skip Button to skp a step -->
                 <a href="{% url 'skip_step' %}" 
                    hx-get="{% url 'skip_step' %}" 

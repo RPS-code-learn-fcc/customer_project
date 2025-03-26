@@ -22,7 +22,6 @@ urlpatterns = [
 
     path('create-customer/success/', create_customer_success, name='create_customer_success'),  # Success page after customer is successfully signed up
     path('create-customer/error/', sign_up_error, name='sign_up_error'),  # Error page if customer cannot be signed up
-    path('create-customer/back/', create_customer_back_step, name='back_step'), # go back in the multi-step customer signup process
     path('create-customer/skip/', create_customer_skip_step, name='skip_step'), # skip to the next page in the sign up process
     path('cancel_signup/', cancel_signup, name='cancel_signup'), # cancel signup process
     path('cancel-confirmation/', cancel_confirmation, name='cancel_confirmation'), # cofmiration page that the signup page has been added

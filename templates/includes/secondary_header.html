@@ -15,11 +15,6 @@
         <li>
             <a href="{% url 'list-mailing-lists' %}">View Current Mailing Lists</a>
         </li>
-        <!-- <li>
-            <a href="{% if request.user.short_name %}{% url 'userprofile-email' request.user.short_name %}{% else %}#{% endif %}">
-                My Profile
-            </a>
-        </li> -->
         <li>
             <a href="{% if request.user.short_name %}{% url 'userprofile-edit' request.user.short_name %}{% else %}#{% endif %}">
                 Edit My Profile

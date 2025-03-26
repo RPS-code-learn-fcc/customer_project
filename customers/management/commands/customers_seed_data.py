@@ -72,7 +72,7 @@ class Command(BaseCommand):
             # add user to users
             users.append(user)
             
-            # print information to terminal to show if the user is created or already exists
+            # information to terminal to show if the user is created or already exists
             if created:
                 self.stdout.write(self.style.SUCCESS(f"New user created: {user.email}"))
             else:

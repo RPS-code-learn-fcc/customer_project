@@ -1185,7 +1185,7 @@ def create_customer_mailing_list(request):
             ).distinct()
 
             # Create a combine query of customers from addresses and instances
-            all_customers = customers_from_addresses & customers_from_interests
+            all_customers = customers_from_addresses | customers_from_interests
             
             selected_interests = CustomerInterest.objects.filter(id__in=selected_interest_ids)
 
@@ -1209,7 +1209,6 @@ def interest_customer_count(request):
     # Fix extraction: split by commas if single string, otherwise get a list of ids
     selected_interests_raw = request.GET.get('selected_interests', '')  # Get as a string
     selected_interest_ids = selected_interests_raw.split(",") if selected_interests_raw else []
-    print(selected_interest_ids, "selected ids")
     # if no customers are selected
     if not selected_interest_ids:
         return JsonResponse({'total_customers': 0})

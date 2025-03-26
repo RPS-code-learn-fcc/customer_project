@@ -125,7 +125,7 @@ DATABASES = {
     }
 }
 # POSTGRES_LOCALLY = False (PostgreSQL is being used remotely), POSTGRES_LOCCALLY = True (local use of PostgreSQL)
-POSTGRES_LOCALLY = False
+POSTGRES_LOCALLY = True
 if ENVIRONMENT == "production" or POSTGRES_LOCALLY == True: # if the production value is set -> it is using render.com, else it is using postgreSQL locally, else it is using sql lite in production
     DATABASES['default'] = dj_database_url.parse(env('DATABASE_URL'))
 

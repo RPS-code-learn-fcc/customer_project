@@ -1,33 +1,35 @@
-# Company X's Data Management App
-Uses django-allauth to login in authorized users.
+# Company X's Customer Data Management App
 
-Permits CRUD operations on customer data, including, but not limited to:
-    - Addresses
-    - Contact preferences
-    - Event/program interests
-    - Document storage for customer records, such as:
-        - Program applications
-        - Soil test results
+- **Uses django-allauth to login in authorized users.
 
-Search customer data, including:
-    -Contact Information: Addresses, Phone Numbers, Emails
-    - Documents
-    - Notes
-Mailing List Creation by:
-    1. selecting interests and automatically adding customers
-    2. Manually adding customers by customer name or customer mailing address
+- **Permits CRUD operations on customer data**, including, but not limited to:
+  - Addresses
+  - Contact preferences
+  - Event/program interests
+  - Document storage for customer records, such as:
+    - Program applications
+    - Soil test results
 
-Activity tracking for:
-    - Customer creation
-    - Note creation or editing (keeps track of note edits)
-    - Document uploads (keeps track of document edits)
+- **Search customer data**, including:
+  - Contact Information: Addresses, Phone Numbers, Emails
+  - Documents
+  - Notes
 
-Can create and view a summarized customer profile
+- **Mailing List Creation** by:
+  1. Selecting interests and automatically adding customers
+  2. Manually adding customers by customer name or customer mailing address
 
-Can also filter home feed of customer information based on:
-    - Customer interests
-    - Date customer was added
-    - User who created/added the customer
+- **Activity tracking** for:
+  - Customer creation
+  - Note creation or editing (keeps track of note edits)
+  - Document uploads (keeps track of document edits)
+
+- **Can create and view a summarized customer profile**
+
+- **Can filter home feed of customer information** based on:
+  - Customer interests
+  - Date customer was added
+  - User who created/added the customer
 
 
 ## < Installation >

@@ -1185,7 +1185,7 @@ def create_customer_mailing_list(request):
             ).distinct()
 
             # Create a combine query of customers from addresses and instances
-            all_customers = customers_from_addresses | customers_from_interests
+            all_customers = customers_from_addresses & customers_from_interests
             
             selected_interests = CustomerInterest.objects.filter(id__in=selected_interest_ids)
 

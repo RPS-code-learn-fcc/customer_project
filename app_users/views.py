@@ -86,7 +86,7 @@ def custom_user_model_structure_view(request):
         rankdir='TB',
         size='8,10',
         dpi='300',
-        fontname='Helvetica',
+        fontname='Arial',
         fontsize='16',
         labelloc='t',
         label='CustomUser Model: Structure & Fields',
@@ -97,7 +97,7 @@ def custom_user_model_structure_view(request):
     
     # Node styling
     node_attrs = {
-        'fontname': 'Helvetica',
+        'fontname': 'Arial',
         'fontsize': '16',
         'shape': 'box',
         'style': 'filled,rounded',

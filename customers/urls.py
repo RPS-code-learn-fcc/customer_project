@@ -6,10 +6,16 @@ from app_users.views import *
 
 
 urlpatterns = [
-    # ------------ PATHS TO SHOW DIAGRAMS: ARCHITECTURE, ER DIAGRAM
+    # ------------ PATHS TO SHOW DIAGRAMS: ARCHITECTURE, ER DIAGRAM, workflows for highlighted views
     path('network-achitecture-diagram/', architecture_diagram_view, name='architecture_diagram'),
     path('orm-diagram/', orm_diagram_view, name='orm_diagram'),
     path('er-diagram/', er_diagram_view, name='er-diagram'),
+    path('search-address-diagram/', search_addresses_diagram_view, name="search-addresses-diagram"),
+    path('search-documents-diagram/', search_documents_diagram_view, name="search-documents-diagram"),
+    path('date-filter-diagram/', date_filter_diagram_view, name="date-filter-diagram"),
+    path('customer-signup-diagram/', customer_signup_diagram_view, name="customer-signup-diagram"),
+    path('mailing-list-creation/', mailing_list_creation_diagram_view, name="mailing-list-diagram"),
+
 
     path('', landing_page, name='landing-view'), # home page for customers: propmpts user to login
     

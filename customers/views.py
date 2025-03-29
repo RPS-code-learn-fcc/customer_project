@@ -63,7 +63,6 @@ def architecture_diagram_view(request):
     png_data = dot.pipe(format='png')
     return HttpResponse(png_data, content_type='image/png')
 
-@login_required    
 def orm_diagram_view(request):
     """View that creates an ORM diagram for the appliation using the Graphviz library"""
     # creating a new directed graph using Graphviz Python library
@@ -115,10 +114,582 @@ def orm_diagram_view(request):
     png_data = dot.pipe(format='png')
     return HttpResponse(png_data, content_type='image/png')
 
-@login_required
 def er_diagram_view(request):
     """Renders a view of the ER diagram constructed using Graphviz, pydot and django-extension"""
     return render(request, 'customers/er_diagram.html')
+
+def customer_relationships_view(request):
+    """Generates a high-resolution portrait diagram of Customer model relationships"""
+    dot = Digraph(format='png')
+    
+    # Portrait-oriented diagram settings
+    dot.attr(
+        rankdir='TB',  # Top to bottom layout
+        size='8.5,11',  # Letter portrait dimensions (in inches)
+        dpi='600',
+        resolution='300',
+        fontname='Helvetica-Bold',
+        fontsize='18',
+        labelloc='t',
+        label='<<b>Customer Model Relationships</b>>',
+        pad='0.5',
+        nodesep='0.3',  # Tighter vertical spacing
+        ranksep='0.5',  # Tighter rank separation
+        compound='true',
+        splines='ortho',
+        overlap='false',
+        concentrate='true'  # Combine edges where possible
+    )
+
+    # Node styling (same as before but adjusted for vertical layout)
+    model_node = {
+        'shape': 'box',
+        'style': 'filled,rounded',
+        'fillcolor': '#f0f8ff',
+        'fontname': 'Helvetica-Bold',
+        'fontsize': '16',
+        'margin': '0.3,0.2',
+        'penwidth': '1.5',
+        'width': '2.5'  # Constrain width for portrait
+    }
+    
+    field_node = {
+        'shape': 'box',
+        'style': 'filled',
+        'fillcolor': '#e8f5e9',
+        'fontname': 'Helvetica',
+        'fontsize': '14',
+        'margin': '0.2,0.15',
+        'penwidth': '1.2',
+        'width': '2.0'
+    }
+    
+    m2m_node = {
+        'shape': 'diamond',
+        'style': 'filled',
+        'fillcolor': '#fff3e0',
+        'fontname': 'Helvetica',
+        'fontsize': '13',
+        'margin': '0.15,0.15',
+        'penwidth': '1.2',
+        'width': '1.8',
+        'height': '1.0'
+    }
+
+    # ===== CUSTOMER MODEL ===== (centered at top)
+    dot.node('customer', '''<<b>Customer</b>
+_________________________________
+<b>Core Fields:</b>
+• first_name (CharField)
+• last_name (CharField)
+• customer_type (choices)
+• created_at (DateTime)
+• is_inactive (Boolean)''', **model_node)
+
+    # ===== RELATIONSHIPS ===== (stacked vertically)
+    with dot.subgraph(name='cluster_relationships') as c:
+        c.attr(style='filled,rounded',
+               label='<<b>Relationships</b>>',
+               fillcolor='#ffffff',
+               color='#3a86ff',
+               fontsize='16',
+               penwidth='2')
+        
+        # Arrange nodes vertically
+        c.attr(rank='same')
+        
+        # Self-referential at top of relationships
+        dot.node('self_rel', '<<b>related_customers</b>\n(M2M through CustomerRelationship)', **m2m_node)
+        dot.edge('customer', 'self_rel', label=' symmetrical=False', dir='both', fontsize='12')
+        
+        # M2M Relationships - vertical stack
+        dot.node('contact_methods', '<<b>preferred_contact_methods</b>\n(M2M to ContactMethod)', **m2m_node)
+        dot.node('interests', '<<b>interests</b>\n(M2M to CustomerInterest)', **m2m_node)
+        dot.node('addresses', '<<b>addresses</b>\n(M2M to Address)', **m2m_node)
+        dot.node('phones', '<<b>phones</b>\n(M2M to Phone)', **m2m_node)
+        dot.node('emails', '<<b>emails</b>\n(M2M to Email)', **m2m_node)
+        
+        # Vertical connections with invisible edges to enforce order
+        dot.edge('self_rel', 'contact_methods', style='invis')
+        dot.edge('contact_methods', 'interests', style='invis')
+        dot.edge('interests', 'addresses', style='invis')
+        dot.edge('addresses', 'phones', style='invis')
+        dot.edge('phones', 'emails', style='invis')
+        
+        # Connect M2M relationships to customer
+        for rel_node in ['contact_methods', 'interests', 'addresses', 'phones', 'emails']:
+            dot.edge('customer', rel_node, label=' blank=True', dir='both', fontsize='12')
+
+        # ForeignKey at bottom of relationships
+        dot.node('creator', '''<<b>creator</b>
+(FK to CustomUser)
+on_delete=SET_NULL''', **field_node)
+        dot.edge('emails', 'creator', style='invis')  # Enforce order
+        dot.edge('customer', 'creator', label=' null=True', fontsize='12')
+
+    # ===== PROPERTIES ===== (at bottom)
+    with dot.subgraph(name='cluster_properties') as c:
+        c.attr(style='filled,rounded',
+               label='<<b>Properties</b>>',
+               fillcolor='#ffebee',
+               fontsize='16',
+               penwidth='2')
+        
+        c.node('props', '''<<b>Properties:</b>
+• display_name
+• mailing_list_name
+• preferred_contact_methods_display
+• has_primary_phone
+• primary_phone_details
+• preferred_email
+• email_count
+• mailing_address
+• address_count
+• phone_count''', 
+               shape='note', 
+               fillcolor='#ffebee',
+               fontsize='14',
+               margin='0.3,0.2')
+        
+        dot.edge('creator', 'props', style='invis')  # Enforce order
+        dot.edge('customer', 'props', style='dashed', penwidth='1.5')
+
+    try:
+        png_data = dot.pipe()
+        return HttpResponse(png_data, content_type='image/png')
+    except Exception as e:
+        return HttpResponse(f"Diagram Error: {str(e)}", status=500)
+
+def search_documents_diagram_view(request):
+    """View that generates a complete document search flow diagram with HTMX"""
+    dot = Digraph(format='png')
+    dot.attr(rankdir='TB')
+    dot.attr('node', fontname='Arial', fontsize='16')
+    dot.attr('edge', fontname='Arial', fontsize='16')
+    dot.attr(label='<<B>Document Search Flow (Django + HTMX)</B>>', labelloc='t', fontsize='16')
+
+    # Main Flow Nodes
+    dot.node('start', 'Start\n(@login_required)', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    dot.node('params', 'Extract GET Parameters:\n- search_document\n- page', 
+             shape='box', style='filled', fillcolor='#f5f5f5')
+    dot.node('check', 'Search term provided?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('empty', 'Return empty queryset', shape='box', style='filled', fillcolor='#fffacd')
+    dot.node('query', 'Build Q Query:\n- file__icontains\n- file_detail__icontains', 
+             shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('filter', 'Filter Documents\n(distinct results)', 
+             shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('annotate', 'Annotate with:\n- customer_inactive status', 
+             shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('order', 'Order by:\n1. active status\n2. created_at', 
+             shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('paginate', 'Paginate Results\n(10 per page)', shape='box', style='filled', fillcolor='#f5f5f5')
+    
+    # Enhanced Render Node with HTMX
+    dot.node('render', '''Render Template (documents_list.html):
+------------------------------
+{% if documents %}
+  {% for document in documents %}
+    {% include 'customers/document.html' %}
+  {% endfor %}
+  
+  {% if documents.has_next %}
+    <div hx-get="{% url ... %}?page={{ next }}"
+         hx-trigger="revealed"
+         hx-swap="outerHTML">
+      Loading more documents...
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-center">No matching documents</p>
+{% endif %}''', 
+             shape='box', style='filled', fillcolor='#ffebee')
+    
+    dot.node('end', 'End', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+
+    # Edges
+    dot.edge('start', 'params')
+    dot.edge('params', 'check')
+    dot.edge('check', 'empty', label=' No')
+    dot.edge('check', 'query', label=' Yes')
+    dot.edge('query', 'filter')
+    dot.edge('filter', 'annotate')
+    dot.edge('annotate', 'order')
+    dot.edge('order', 'paginate')
+    dot.edge('empty', 'paginate')
+    dot.edge('paginate', 'render')
+    dot.edge('render', 'end')
+
+    # Clusters
+    with dot.subgraph(name='cluster_orm') as c:
+        c.attr(style='dashed', label='Django ORM', fontsize='12')
+        c.node('query')
+        c.node('filter')
+        c.node('annotate')
+        c.node('order')
+
+    with dot.subgraph(name='cluster_htmx') as c:
+        c.attr(style='filled', label='HTMX Features', fontsize='12', fillcolor='#fff3e0')
+        c.node('h1', 'Conditional Rendering', shape='note')
+        c.node('h2', 'Infinite Scroll Pagination', shape='note')
+        c.node('h3', 'Partial Includes', shape='note')
+        dot.edge('render', 'h1', style='dashed')
+        dot.edge('render', 'h2', style='dashed')
+        dot.edge('render', 'h3', style='dashed')
+
+    return HttpResponse(dot.pipe(format='png'), content_type='image/png')
+
+def date_filter_diagram_view(request):
+    """Generates complete diagram of date filtering with HTMX partial template"""
+    dot = Digraph(format='png')
+    dot.attr(rankdir='TB')
+    dot.attr('node', fontname='Arial', fontsize='16')
+    dot.attr('edge', fontname='Arial', fontsize='16')
+    dot.attr(label='<<B>Complete Date Filtering Flow with HTMX</B>>', labelloc='t', fontsize='16')
+
+    # ===== MAIN FLOW =====
+    dot.node('start', 'Start\n(@login_required)', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    dot.node('get_params', 'Extract GET Parameters:\n- start_date\n- end_date', style='filled', fillcolor='#f5f5f5')
+    dot.node('init_query', 'Initialize empty Q()', style='filled', fillcolor='#e6f3ff')
+    
+    # Date processing decision tree
+    dot.node('has_dates', 'Dates provided?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('has_both', 'Both dates?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('has_start', 'Only start_date?', shape='diamond', style='filled', fillcolor='#fffacd')
+    
+    # Date parsing and query building
+    dot.node('parse_both', '''Parse Both Dates:
+1. start_date = 00:00:00
+2. end_date = 23:59:59.999''', style='filled', fillcolor='#e6f3ff')
+    dot.node('build_both', 'Q Query:\ncreated_at BETWEEN\n[start_date, end_date]', style='filled', fillcolor='#e6f3ff')
+    
+    dot.node('parse_start', 'Parse start_date\n(as 00:00:00)', style='filled', fillcolor='#e6f3ff')
+    dot.node('build_start', 'Q Query:\ncreated_at >= start_date', style='filled', fillcolor='#e6f3ff')
+    
+    dot.node('parse_end', '''Parse end_date:
+1. Add 1 day
+2. Subtract 1μs''', style='filled', fillcolor='#e6f3ff')
+    dot.node('build_end', 'Q Query:\ncreated_at <= end_date', style='filled', fillcolor='#e6f3ff')
+    
+    # Database operations
+    dot.node('execute', '''Execute Query:
+Customer.objects.filter(query)
+.distinct()''', style='filled', fillcolor='#e6f3ff')
+    dot.node('handle_error', 'Handle exceptions\n(return empty list)', style='filled', fillcolor='#ffebee')
+    
+    # ===== TEMPLATE RENDERING WITH HTMX =====
+    dot.node('render', '''Render Partial Template:
+------------------------------
+{% if customers %}
+  {% for customer in customers %}
+    {% include 'customers/customer.html' %}
+  {% endfor %}
+
+  {% if customers.has_next %}
+    <div hx-get="{% url 'home' %}?page={{ next }}"
+         hx-trigger="revealed"
+         hx-target="this"
+         hx-swap="outerHTML">
+      Loading more...
+    </div>
+  {% endif %}
+{% else %}
+  <p class="text-center">No customers found</p>
+{% endif %}''', shape='box', style='filled', fillcolor='#e8f5e9')
+    
+    dot.node('end', 'End', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+
+    # ===== EDGES =====
+    dot.edge('start', 'get_params')
+    dot.edge('get_params', 'init_query')
+    dot.edge('init_query', 'has_dates')
+    
+    # Date processing paths
+    dot.edge('has_dates', 'has_both', label='Yes')
+    dot.edge('has_dates', 'execute', label='No')
+    
+    dot.edge('has_both', 'parse_both', label='Yes')
+    dot.edge('has_both', 'has_start', label='No')
+    
+    dot.edge('parse_both', 'build_both')
+    dot.edge('build_both', 'execute')
+    
+    dot.edge('has_start', 'parse_start', label='Yes')
+    dot.edge('has_start', 'parse_end', label='No')
+    
+    dot.edge('parse_start', 'build_start')
+    dot.edge('build_start', 'execute')
+    
+    dot.edge('parse_end', 'build_end')
+    dot.edge('build_end', 'execute')
+    
+    # Result handling
+    dot.edge('execute', 'render', label='Success')
+    dot.edge('execute', 'handle_error', label='Exception')
+    dot.edge('handle_error', 'render')
+    
+    dot.edge('render', 'end')
+
+    # ===== CLUSTERS =====
+    with dot.subgraph(name='cluster_dates') as c:
+        c.attr(style='dashed', label='Date Processing', fontsize='12')
+        c.node('parse_both')
+        c.node('parse_start')
+        c.node('parse_end')
+        c.node('build_both')
+        c.node('build_start')
+        c.node('build_end')
+
+    with dot.subgraph(name='cluster_htmx') as c:
+        c.attr(style='filled', label='HTMX Features', fillcolor='#fff3e0')
+        c.node('htmx_cond', 'Conditional Rendering\n(if/else)', shape='note')
+        c.node('htmx_load', '''Infinite Scroll:
+hx-trigger="revealed"
+hx-swap="outerHTML"''', shape='note')
+        c.node('htmx_inc', 'Partial Includes\n(customer.html)', shape='note')
+        c.node('htmx_pag', 'Dynamic Pagination\n?page={{ next }}', shape='note')
+        
+        dot.edge('render', 'htmx_cond', style='dashed')
+        dot.edge('render', 'htmx_load', style='dashed')
+        dot.edge('render', 'htmx_inc', style='dashed')
+        dot.edge('render', 'htmx_pag', style='dashed')
+
+    with dot.subgraph(name='cluster_errors') as c:
+        c.attr(style='filled', label='Error Handling', fillcolor='#ffebee')
+        c.node('err_parse', 'Date Parse Errors')
+        c.node('err_query', 'Query Errors')
+        dot.edge('err_parse', 'err_query', style='invis')
+        
+        dot.edge('parse_both', 'err_parse', style='dotted')
+        dot.edge('parse_start', 'err_parse', style='dotted')
+        dot.edge('parse_end', 'err_parse', style='dotted')
+        dot.edge('execute', 'err_query', style='dotted')
+
+    return HttpResponse(dot.pipe(), content_type='image/png')
+
+def customer_signup_diagram_view(request):
+    """Diagram for Customer Creation"""
+    dot = Digraph(format='png')
+    dot.attr(rankdir='TB') # top to bottom
+    dot.attr('node', fontname='Arial', fontsize='16')
+    dot.attr('edge', fontname='Arial', fontsize='16')
+    
+    dot.attr(label='<<B>Customer Signup/ Creation</B>>', labelloc='t', fontsize='16')
+
+    #------------- CORE NODES -----------------
+    dot.node('start', 'Initiate Cust. Signup', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    
+    # session info
+    dot.node('init', 'Start Session Mngmt.:\n- signup_step = 0', shape='box', style='filled', fillcolor='#f5f5f5')
+    
+    # get step from session
+    dot.node('check_step', 'What step is in the session?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('get_form', 'Get Form Class\nfrom FORM_CLASSES[step]', shape='box', style='filled', fillcolor='#e6f3ff')
+    
+    # Form handling / processing
+    dot.node('handle_post', 'Handle POST Request', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('validate', 'Form Validation', shape='diamond', style='filled', fillcolor='#fffacd')
+    
+    # Customer creation paths
+    dot.node('create_cust', 'Create Customer:\n- Set creator=user\n- Save to session', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('process_partial', 'Process Partial Form:\n- Save instance\n- Add to customer', shape='box', style='filled', fillcolor='#e6f3ff')
+    
+    # Success/error paths
+    dot.node('success', 'Redirect to\nSuccess Page', shape='box', style='filled', fillcolor='#e8f5e9')
+    dot.node('error', 'Redirect to\nError Page', shape='box', style='filled', fillcolor='#ffebee')
+    
+    # HTMX nodes
+    dot.node('htmx_check', 'HTMX Request?', shape='diamond', style='filled', fillcolor='#fff3e0')
+    dot.node('render_partial', 'Render HTMX Partial:\nsignup_form.html', shape='box', style='filled', fillcolor='#fff3e0')
+    
+    # Skip step functionality
+    dot.node('skip_step', 'Skip Step Logic:\n- Increment step\n- Get next form', shape='box', style='filled', fillcolor='#e6f3ff')
+    
+    # Cancel flow
+    dot.node('cancel', 'Cancel Signup:\n- Delete customer\n- Clear session', shape='box', style='filled', fillcolor='#ffebee')
+    dot.node('cancel_confirm', 'Show Cancellation\nConfirmation', shape='box', style='filled', fillcolor='#f5f5f5')
+
+    # connect edges with arrows
+    dot.edge('start', 'init')
+    dot.edge('init', 'check_step')
+    
+    # steps
+    dot.edge('check_step', 'error', label='Invalid step')
+    dot.edge('check_step', 'get_form', label='Valid step')
+    
+    # form handling of data
+    dot.edge('get_form', 'handle_post', label='POST')
+    dot.edge('handle_post', 'validate')
+    dot.edge('validate', 'error', label='Invalid')
+    dot.edge('validate', 'htmx_check', label='Valid')
+    
+    # htmx
+    dot.edge('htmx_check', 'create_cust', label='Step 0\n(non-HTMX)')
+    dot.edge('htmx_check', 'process_partial', label='Steps 1-5\n(non-HTMX)')
+    dot.edge('htmx_check', 'render_partial', label='HTMX')
+    
+    # successfully create a customer
+    dot.edge('create_cust', 'check_step', label='Increment step')
+    dot.edge('process_partial', 'check_step', label='Increment step')
+    dot.edge('check_step', 'success', label='All steps complete')
+    
+    # partial render / htmx
+    dot.edge('render_partial', 'check_step')
+    
+    # Skip step flow
+    dot.node('skip_entry', 'Skip Step Entry', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    dot.edge('skip_entry', 'skip_step')
+    dot.edge('skip_step', 'htmx_check')
+    
+    # Cancel flow
+    dot.node('cancel_entry', 'Cancel Entry', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    dot.edge('cancel_entry', 'cancel')
+    dot.edge('cancel', 'cancel_confirm')
+    dot.edge('cancel', 'error', label='Failure')
+
+    # ------ cluster info
+    with dot.subgraph(name='cluster_session') as c:
+        c.attr(style='dashed', label='Session Management', fontsize='12')
+        c.node('init')
+        c.node('check_step')
+        c.node('create_cust')
+        c.node('cancel')
+
+    with dot.subgraph(name='cluster_forms') as c:
+        c.attr(style='dashed', label='Form Processing', fontsize='12')
+        c.node('get_form')
+        c.node('validate')
+        c.node('process_partial')
+        c.node('skip_step')
+
+    with dot.subgraph(name='cluster_htmx') as c:
+        c.attr(style='filled', label='HTMX Flow', fillcolor='#fff3e0')
+        c.node('htmx_check')
+        c.node('render_partial')
+
+    with dot.subgraph(name='cluster_partials') as c:
+        c.attr(style='filled', label='Partial Form Logic', fillcolor='#e8f5e9')
+        c.node('process_partial')
+        c.node('render_partial')
+
+    # ------- FORM INFO
+    with dot.subgraph(name='cluster_form_types') as c:
+        c.attr(label='Form Specific Processing', style='dashed')
+        c.node('addr', 'Address:\n- Save\n- customer.addresses.add()', shape='note')
+        c.node('phone', 'Phone:\n- Save\n- customer.phones.add()', shape='note')
+        c.node('email', 'Email:\n- Save\n- customer.emails.add()', shape='note')
+        c.node('doc', 'Document:\n- Set customer/user\n- Save', shape='note')
+        c.node('note', 'Note:\n- Set customer/user\n- Save', shape='note')
+        
+        dot.edge('process_partial', 'addr', style='dashed')
+        dot.edge('process_partial', 'phone', style='dashed')
+        dot.edge('process_partial', 'email', style='dashed')
+        dot.edge('process_partial', 'doc', style='dashed')
+        dot.edge('process_partial', 'note', style='dashed')
+
+    return HttpResponse(dot.pipe(), content_type='image/png')
+
+def mailing_list_creation_diagram_view(request):
+    """Diagram showing the process of creating a mailing list"""
+    # create the digraph
+    dot = Digraph(format='png')
+    dot.attr(rankdir='TB') # top to bottom orientation
+    dot.attr('node', fontname='Arial', fontsize='16')
+    dot.attr('edge', fontname='Arial', fontsize='16')
+    dot.attr(label='<<B>Mailing List Creation Process</B>>', labelloc='t', fontsize='16')
+
+    # ----- initiate process of creating a mailing list
+    dot.node('start', 'Start\n(@login_required)', shape='ellipse', style='filled', fillcolor='#f0f8ff')
+    dot.node('post_check', 'POST Request?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('get_form', 'Return Empty Form', shape='box', style='filled', fillcolor='#f5f5f5')
+    
+    # Form processing
+    dot.node('parse_ids', '''Parse Selected IDs:
+- Address IDs
+- Interest IDs''', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('validate_empty', 'Any IDs Provided?', shape='diamond', style='filled', fillcolor='#fffacd')
+    dot.node('show_error', 'Show Error:\n"No addresses/interests"', shape='box', style='filled', fillcolor='#ffebee')
+    
+    # Database operations
+    dot.node('save_ml', 'Save Mailing List\n(commit=False)', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('get_addresses', 'Get Selected\nAddresses', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('get_customers_a', 'Get Customers\nFrom Addresses', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('get_customers_i', '''Get Customers From Interests:
+- Active only
+- With mailing addresses''', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('get_interests', 'Get Selected\nInterests', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('get_i_addresses', 'Get Addresses\nFrom Interests', shape='box', style='filled', fillcolor='#e6f3ff')
+    
+    # Final steps
+    dot.node('combine', 'Combine Customer\nQuerysets', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('add_relations', '''Add to Mailing List:
+- Customers
+- Addresses
+- Interests''', shape='box', style='filled', fillcolor='#e6f3ff')
+    dot.node('redirect', 'Redirect to\nMailing Lists', shape='box', style='filled', fillcolor='#e8f5e9')
+
+    # ---------- Show how signals are used in the process -----------
+    with dot.subgraph(name='cluster_signals') as c:
+        c.attr(style='filled', label='Signal Handlers', fillcolor='#fff3e0')
+        
+        # Highlight how Interests change
+        c.node('sig1', '''M2M_changed (interests):
+1. Add/remove customers
+2. Update addresses''', shape='note')
+        
+        # show how customer interest changes
+        c.node('sig2', '''M2M_changed (customer.interests):
+1. Add to matching lists
+2. Remove if no interests''', shape='note')
+        
+        # show how address changes
+        c.node('sig3', '''post_save (Address):
+1. Validate mailing address
+2. Update lists''', shape='note')
+
+    # --- connect the nodes
+    dot.edge('start', 'post_check')
+    dot.edge('post_check', 'get_form', label='No')
+    dot.edge('post_check', 'parse_ids', label='Yes')
+    dot.edge('parse_ids', 'validate_empty')
+    dot.edge('validate_empty', 'show_error', label='No')
+    dot.edge('validate_empty', 'save_ml', label='Yes')
+    
+    # Database operations
+    dot.edge('save_ml', 'get_addresses')
+    dot.edge('get_addresses', 'get_customers_a')
+    dot.edge('get_customers_a', 'combine')
+    
+    dot.edge('save_ml', 'get_interests')
+    dot.edge('get_interests', 'get_customers_i')
+    dot.edge('get_customers_i', 'get_i_addresses')
+    dot.edge('get_i_addresses', 'combine')
+    
+    dot.edge('combine', 'add_relations')
+    dot.edge('add_relations', 'redirect')
+
+    # Signal triggers
+    dot.edge('add_relations', 'sig1', style='dashed')
+    dot.edge('add_relations', 'sig2', style='dashed')
+    dot.edge('get_addresses', 'sig3', style='dashed')
+    dot.edge('get_i_addresses', 'sig3', style='dashed')
+
+    # ------- define the clusters
+    with dot.subgraph(name='cluster_form') as c:
+        c.attr(style='dashed', label='Form Processing')
+        c.node('post_check')
+        c.node('parse_ids')
+        c.node('validate_empty')
+
+    with dot.subgraph(name='cluster_db') as c:
+        c.attr(style='dashed', label='Database Operations')
+        c.node('get_addresses')
+        c.node('get_customers_a')
+        c.node('get_customers_i')
+        c.node('get_interests')
+        c.node('get_i_addresses')
+
+    return HttpResponse(dot.pipe(), content_type='image/png')
+
 
 # --------------------------- LANDING PAGE FOR ALL USERS - ONLY VIEW THAT DOESN'T REQUIRE A USER TO BE LOGGED IN ---------------------------
 def landing_page(request):
@@ -1071,8 +1642,6 @@ def create_customer_mailing_list(request):
         selected_interest_ids = request.POST.get("selected_interests", "").split(",")
         selected_interest_ids = [int(id) for id in selected_interest_ids if id.strip().isdigit()]
         
-        
-
         # if both selected_interest_ids and selected_address_ids are empty stings send an error message to the form & render it 
         if not selected_address_ids and not selected_interest_ids:
             msg = "You must add at least one address / customer or select at least interest to create a mailing list."
@@ -1412,8 +1981,6 @@ def mailing_list_edit_view(request, pk):
     return render(request, 'customers/mailing_list_edit.html', context)
 
 
-
-
 # ------------------------------- ADDITIONAL document AND Note views --------------------
 @login_required
 def note_detail_view(request, customer_id, note_pk):
@@ -1634,87 +2201,82 @@ def remove_customer_address_from_mailing_list(request, mailing_list_id, customer
     redirect_url += f"?status={status}&message={message}"
     return redirect(redirect_url)
 # ------------------------ MAILING LIST: Labels & pdf generation -------------------------------------------
-@login_required     
+@login_required
 def generate_labels_pdf(request, mailing_list_id):
-    """View that allows the user to generate pdf labels to create mailing lists - a pdf is downloaded"""
+    """View that generates PDF labels with proper page management"""
     mailing_list = get_object_or_404(CustomerMailingList, id=mailing_list_id)
 
-    # Generate formatted addresses with the first associated customer's name and address
-    formatted_addresses = [
-        f"{address.customer_addresses.first().mailing_list_name}\n{address.street}\n{address.city}, {address.state} {address.zip_code}"
-        for address in mailing_list.addresses.all()
-        if address.customer_addresses.exists()  # Ensure the address is linked to at least one customer
-    ]
-
-     # get starting position of grid (default to 0 if the user does not click anything on the screen)
-    start_position_str = request.POST.get('start_position', '1')  
+    # Get all addresses (only once)
+    addresses = mailing_list.addresses.filter(customer_addresses__isnull=False)
+    total_addresses = addresses.count()
+    
+    # Get starting position
     try:
-        start_position = int(start_position_str) - 1  # Convert to zero-based index
+        start_position = max(0, int(request.POST.get('start_position', 1)) - 1)
     except ValueError:
-        start_position = 0  # Default to 0 if it fails - empty string provided, etc. 
-
-    if start_position < 0:  # make sure the start position is not negative
         start_position = 0
 
-    # PDF response
+    # PDF setup
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{mailing_list.name}_mailing_list.pdf"'
-
-    # Set up PDF
-    pdf = canvas.Canvas(response, pagesize=letter)
-    pdf.setFont("Helvetica", 10)
-
-    # Avery 5160 Labels (3x10 layout)
+    response['Content-Disposition'] = f'attachment; filename="{mailing_list.name}_labels.pdf"'
+    
+    # Label sheet configuration (Avery 5160)
     labels_per_row = 3
-    labels_per_col = 10
+    rows_per_page = 10
     label_width = 2.625 * inch
     label_height = 1 * inch
     margin_x = 0.5 * inch
     margin_y = 0.5 * inch
     spacing_x = 0.125 * inch
-    spacing_y = 0.0 * inch  # Adjust if needed
-
-    # Set the starting X and Y position for labels
-    x_start = margin_x
-    y_start = letter[1] - margin_y - label_height  # Start from the top-left
-
-    total_labels = labels_per_row * labels_per_col  # 30 labels per page
     
-    count = 0  # Tracks actual labels printed
-    label_count = start_position  # Includes empty labels for the start position
+    # Initialize PDF
+    pdf = canvas.Canvas(response, pagesize=letter)
+    
+    # Calculate total labels per page
+    labels_per_page = labels_per_row * rows_per_page
+    
+    # Track position counter
+    current_position = 0
 
-    # Begin writing text for multi-line support
-    text_object = pdf.beginText()
-    text_object.setFont("Helvetica", 10)
+    for address in addresses:
+        # Skip until we reach starting position
+        if current_position < start_position:
+            current_position += 1
+            continue
 
-    for address in formatted_addresses:
-        # Calculate row and column based on label_count, not count
-        row = label_count // labels_per_row
-        col = label_count % labels_per_row
+        # Calculate position on current page
+        position_on_page = current_position % labels_per_page
 
-        # Calculate X and Y positions
-        x = x_start + col * (label_width + spacing_x)
-        y = y_start - row * (label_height + spacing_y)
-
-        # Start a new page if needed
-        if label_count > 0 and label_count % total_labels == 0:
+        # Start a new page if at beginning of a new page, but not first label
+        if position_on_page == 0 and current_position != start_position:
             pdf.showPage()
-            pdf.setFont("Helvetica", 10)
-            label_count = 0  # Reset label count for new page
-            row = label_count // labels_per_row
-            col = label_count % labels_per_row
-            x = x_start + col * (label_width + spacing_x)
-            y = y_start - row * (label_height + spacing_y)
 
-        # Draw the multi-line text
-        text_object.setTextOrigin(x + 5, y + label_height - 15)  # Adjust label positioning
-        for line in address.split("\n"):  # Split into lines for name + address
-            text_object.textLine(line)  # Add each line separately
+        # Reset font after showPage (required)
+        pdf.setFont("Helvetica", 10)
 
-        pdf.drawText(text_object)  # Render the text
-        count += 1
-        label_count += 1  # Always increment, to keep track of position
+        # Determine row and column
+        row = position_on_page // labels_per_row
+        col = position_on_page % labels_per_row
 
+        # Calculate label coordinates
+        x = margin_x + col * (label_width + spacing_x)
+        y = letter[1] - margin_y - label_height - (row * label_height)
+
+        # Get customer info
+        customer = address.customer_addresses.first()
+        address_text = f"{customer.mailing_list_name}\n{address.street}\n{address.city}, {address.state} {address.zip_code}"
+        
+                # Create text object
+        text_object = pdf.beginText()
+        text_object.setTextOrigin(x + 5, y + label_height - 15)
+        for line in address_text.split("\n"):
+            text_object.textLine(line)
+        pdf.drawText(text_object)
+
+        # Move to next label
+        current_position += 1
+
+    # Finalize the PDF
     pdf.save()
     return response
 

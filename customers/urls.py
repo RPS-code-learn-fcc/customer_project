@@ -10,7 +10,8 @@ urlpatterns = [
     path('network-achitecture-diagram/', architecture_diagram_view, name='architecture_diagram'),
     path('orm-diagram/', orm_diagram_view, name='orm_diagram'),
     path('er-diagram/', er_diagram_view, name='er-diagram'),
-    path('search-address-diagram/', search_addresses_diagram_view, name="search-addresses-diagram"),
+    path('customer-relationships/', customer_relationships_view, name="customer-relationships-view"),
+
     path('search-documents-diagram/', search_documents_diagram_view, name="search-documents-diagram"),
     path('date-filter-diagram/', date_filter_diagram_view, name="date-filter-diagram"),
     path('customer-signup-diagram/', customer_signup_diagram_view, name="customer-signup-diagram"),

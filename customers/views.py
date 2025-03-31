@@ -39,30 +39,31 @@ from reportlab.pdfgen import canvas
 
 
 # --------------------------- PROJECT LAYOUT VIEWS USING DIGRAPHS / GRAPHVIZ ----------------------------
-@login_required    
+@login_required
 def architecture_diagram_view(request):
-    """View that creates an architecture diagram for the customer_project appliation using the Graphviz library"""
-    # creating a new directed graph using Graphviz Python library
-    dot = Digraph(format='png') # dot: graph description language
-    dot.attr(rankdir='LR') # going left to right
-    dot.attr('node', fontname='Arial') # set font and size
+    """View that generates an architecture diagram for the customer_project application using Graphviz"""
+    # Create directed graph
+    dot = Digraph(format='png')
+    dot.attr(rankdir='LR')  # Left-to-right layout
+    dot.attr('node', fontname='Arial')
 
-    # Main Components/Nodes of the diagram
-    dot.node('Frontend', 'Frontend\n(Tailwind CSS, Alpine.js, HTMX)', shape='box', style='filled', fillcolor='lightblue')
-    dot.node('Backend', 'Backend\n(Django)', shape='ellipse', style='filled', fillcolor='lightgreen')
-    dot.node('Database', 'Database\n(SQLite)', shape='cylinder', style='filled', fillcolor='lightgray')
-    dot.node('REST API', 'REST API\n(Django REST Framework)', shape='diamond', style='filled', fillcolor='lightyellow')
+    # list all nodes and put styling
+    dot.node('Frontend', 'Frontend\n(HTMX + Tailwind CSS)', 
+             shape='box', style='filled', fillcolor='lightblue')
+    dot.node('Backend', 'Backend\n(Django)', 
+             shape='ellipse', style='filled', fillcolor='lightgreen')
+    dot.node('Database', 'Database\n(SQLite/PostgreSQL)', 
+             shape='cylinder', style='filled', fillcolor='lightgray')
 
-    # Connections between nodes
-    dot.edge('Frontend', 'Backend', label='Request | Response', dir='both')
-    dot.edge('Backend', 'Database', label='Query | Response', dir='both')
-    dot.edge('Frontend', 'REST API', label='API Request | Response', dir='both')
-    dot.edge('REST API', 'Backend', label='API Request | Response', dir='both')
+    # connnect edges between the noedes
+    dot.edge('Frontend', 'Backend', 
+             label='HTMX Requests\nForm Submissions', dir='both')
+    dot.edge('Backend', 'Database', 
+             label='ORM Queries', dir='both')
 
-    # Render the diagram
+    # show the final diagram
     png_data = dot.pipe(format='png')
     return HttpResponse(png_data, content_type='image/png')
-
 def orm_diagram_view(request):
     """View that creates an ORM diagram for the appliation using the Graphviz library"""
     # creating a new directed graph using Graphviz Python library
